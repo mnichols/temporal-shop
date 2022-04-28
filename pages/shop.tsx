@@ -14,5 +14,9 @@ const ShopPage = ({ products }) => {
         </div>
     );
 };
-
 export default ShopPage;
+
+export async function getStaticProps() {
+    const products = await getProducts();
+    return { props: { products } };
+}
