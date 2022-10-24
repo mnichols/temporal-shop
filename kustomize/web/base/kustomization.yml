@@ -1,0 +1,7 @@
+---
+commonLabels:
+  app: web
+namespace: temporal-shop
+resources:
+  - deployment.yml
+  - service.yml

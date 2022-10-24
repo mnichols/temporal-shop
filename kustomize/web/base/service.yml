@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service                    # Type of kubernetes resource
+metadata:
+  name: web   # Name of the resource
+  labels:
+    app: web
+spec:
+  type: ClusterIP                 # A port is opened on each node in your cluster via Kube proxy.
+  ports:                         # Take incoming HTTP requests on port 9090 and forward them to the targetPort of 8080
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app: web         # Map any pod with label `app=web` to this service

@@ -1,0 +1,44 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /gtm
+    forceSlash: false
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingressroutegtm
+
+spec:
+  entryPoints:
+    - web
+  routes:
+    # Match is the rule corresponding to an underlying router.
+    # Later on, match could be the simple form of a path prefix, e.g. just "/bar",
+    # but for now we only support a traefik style matching rule.
+    - match: Host(`sa.tmprl-test.cloud`) && PathPrefix(`/temporal-shop`)
+      # kind could eventually be one of "Rule", "Path", "Host", "Method", "Header",
+      # "Parameter", etc, to support simpler forms of rule matching, but for now we
+      # only support "Rule".
+      kind: Rule
+        # (optional) Priority disambiguates rules of the same length, for route matching.
+      priority: 12
+      middlewares:
+        - name: stripprefix
+        # (default 1) A weight used by the weighted round-robin strategy (WRR).
+        # (default true) PassHostHeader controls whether to leave the request's Host
+        # Header as it was before it reached the proxy, or whether to let the proxy set it
+        # to the destination (backend) host.
+      services:
+        - name: web
+          port: 80
+          passHostHeader: true
+          responseForwarding:
+            # (default 100ms) Interval between flushes of the buffered response body to the client.
+            flushInterval: 100ms
+          weight: 1

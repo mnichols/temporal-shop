@@ -1,0 +1,44 @@
+package routes
+
+import (
+	"fmt"
+	"github.com/yosida95/uritemplate"
+	"net/http"
+)
+
+var (
+	GETApp = Route{
+		Template: uritemplate.MustNew("/app"),
+		Raw:      "/app/*",
+	}
+	GETAppNoSlash = Route{
+		Template: uritemplate.MustNew("/app"),
+		Raw:      "/app",
+		Redirect: &Redirect{
+			Target:     "/app/",
+			StatusCode: http.StatusMovedPermanently,
+		},
+	}
+)
+
+type Route struct {
+	Raw      string
+	Template *uritemplate.Template
+	Redirect *Redirect
+}
+type Redirect struct {
+	Target     string
+	StatusCode int
+}
+
+func (r Redirect) Handler() http.Handler {
+	return http.RedirectHandler(r.Target, r.StatusCode)
+}
+
+func (r Route) MustExpand(vals uritemplate.Values) string {
+	s, err := r.Template.Expand(vals)
+	if err != nil {
+		panic(fmt.Errorf("failed to expand %s: %w", r.Template.Raw(), err))
+	}
+	return s
+}
