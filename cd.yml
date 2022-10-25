@@ -15,6 +15,38 @@ env:
   SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
 
 jobs:
+#  run-tests:
+#    runs-on: temporal-shop #this should be in the CR created for the runner
+#    steps:
+#      - name: Clone
+#        uses: actions/checkout@v3
+#      #### asdf steps
+#      #### TODO replace with a composite action : https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
+#      - name: Setup asdf
+#        # see https://github.com/asdf-vm/actions/pull/467
+#        uses: aeddi/asdf-actions/setup@681862213369d8d868be8a2a7d6040c4d63027db
+#        with:
+#          skip_install: true
+#      - name: asdf cache
+#        id: asdf-cache
+#        uses: actions/cache@v2
+#        with:
+#          path: ${{ env.ASDF_DIR }}
+#          key: ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}
+#          restore-keys: |
+#            ${{ runner.os }}-asdf-
+#      - name: Install asdf tools from .tool-versions
+#        if: steps.asdf-cache.outputs.cache-hit != 'true'
+#        uses: asdf-vm/actions/install@v1
+#      #### end asdf steps
+#      - name: SetupGo
+#        uses: actions/setup-go@v3
+#        with:
+#          go-version: ${{ env.GOVERSION }}
+#      - name: Test
+#        run: |
+#          make test
+
   build-upload-image:
     runs-on: temporal-shop #this should be in the CR created for the runner
 #    needs: [run-tests]
@@ -43,12 +75,7 @@ jobs:
         if: steps.asdf-cache.outputs.cache-hit != 'true'
         uses: asdf-vm/actions/install@v1
       #### end asdf steps
-      - name: Verify dependencies
-        run: |
-          go mod verify
-          cd web/ui && npm i
-      - name: Build
-        run: make clean && make bins
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
