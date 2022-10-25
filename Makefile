@@ -1,5 +1,5 @@
 .PHONY: clean test bins lint tools
-PROJECT_ROOT = github.com/temporalio/gtm
+PROJECT_ROOT = github.com/temporalio/temporal-shop
 
 # default target
 default: clean test bins
@@ -13,7 +13,7 @@ APPPKG := $(PROJECT_ROOT)/app
 LINKER_FLAGS := -X $(APPPKG).BuildDate=$(DATE) -X $(APPPKG).Commit=$(COMMIT) -X $(APPPKG).Version=$(VERSION)
 
 web:
-	@go build -ldflags "$(LINKER_FLAGS)" -o web ./cmd/web/*.go
+	@go build -ldflags "$(LINKER_FLAGS)" -o web ./web/bff/cmd/bff/*.go
 
 bins: web
 

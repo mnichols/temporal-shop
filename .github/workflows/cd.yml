@@ -7,14 +7,16 @@ on:
 #      - main
 env:
   AWS_REGION: us-east-1
+  ECR_REPOSITORY: temporal-shop/web
   SLACK_CHANNEL: C038377FSCF #team-gtm
   GOPRIVATE: github.com/temporalio
   GOVERSION: '^1.18.4'
   MY_PAT: ${{ secrets.MY_PAT }}
+  SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
 
 jobs:
   run-tests:
-    runs-on: shop #this should be in the CR created for the runner
+    runs-on: temporal-shop #this should be in the CR created for the runner
     steps:
       - name: Clone
         uses: actions/checkout@v3
@@ -46,15 +48,15 @@ jobs:
           make test
 
   build-upload-image:
-    runs-on: shop #this should be in the CR created for the runner
+    runs-on: temporal-shop #this should be in the CR created for the runner
     needs: [run-tests]
     steps:
       - name: Clone
         uses: actions/checkout@v3
-#### asdf steps
-#### TODO replace with a composite action : https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
+      #### asdf steps
+      #### TODO replace with a composite action : https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
       - name: Setup asdf
-# see https://github.com/asdf-vm/actions/pull/467
+        # see https://github.com/asdf-vm/actions/pull/467
         uses: aeddi/asdf-actions/setup@681862213369d8d868be8a2a7d6040c4d63027db
         with:
           skip_install: true
@@ -69,7 +71,7 @@ jobs:
       - name: Install asdf tools from .tool-versions
         if: steps.asdf-cache.outputs.cache-hit != 'true'
         uses: asdf-vm/actions/install@v1
-  #### end asdf steps
+      #### end asdf steps
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -80,10 +82,10 @@ jobs:
         with:
           image: temporal-shop/web
           addLatest: true
-         # tags: ${{ steps.meta.outputs.tags }}
+          # tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           registry: ${{ steps.login-ecr.outputs.registry }}
-          dockerfile: Dockerfile
+          dockerfile: Dockerfile.web
       - name: Update Kubeconfig
         run: |
           cicd/scripts/update-kubeconfig.sh

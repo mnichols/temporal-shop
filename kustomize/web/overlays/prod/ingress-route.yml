@@ -6,7 +6,7 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /gtm
+      - /temporal-shop
     forceSlash: false
 ---
 apiVersion: traefik.containo.us/v1alpha1

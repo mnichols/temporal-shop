@@ -37,5 +37,5 @@ RUN apk add --no-cache tzdata
 EXPOSE 8080
 
 # this is the `/web/bff/cmd/bff/main.go` binary being run
-COPY --from=builder /work/app /usr/local/bin/app
+COPY --from=builder /work/web_bff /usr/local/bin/app
 CMD ["/usr/local/bin/app"]

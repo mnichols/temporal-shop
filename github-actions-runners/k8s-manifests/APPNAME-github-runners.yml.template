@@ -1,0 +1,97 @@
+apiVersion: garo.tietoevry.com/v1alpha1
+kind: GithubActionRunner
+metadata:
+  annotations:
+  name: ${APPNAME}-github-runners
+  namespace: cicd
+spec:
+  deletionOrder: LeastRecent
+  maxRunners: 6
+  minRunners: 1
+  minTtl: 0m
+  organization: temporalio
+  podTemplateSpec:
+    metadata:
+      annotations:
+        prometheus.io/port: "3903"
+        prometheus.io/scrape: "true"
+      labels:
+        runnerType: builder
+    spec:
+      serviceAccountName: cicd
+      containers:
+        - env:
+            - name: RUNNER_DEBUG
+              value: "true"
+            - name: DOCKER_TLS_CERTDIR
+              value: /certs
+            - name: DOCKER_HOST
+              value: tcp://localhost:2376
+            - name: DOCKER_TLS_VERIFY
+              value: "1"
+            - name: DOCKER_CERT_PATH
+              value: /certs/client
+            - name: GH_ORG
+              value: temporalio
+            - name: GH_REPO
+              value: <APPNAME>
+            - name: ACTIONS_RUNNER_INPUT_LABELS
+              value: ${APPNAME}
+          envFrom:
+            - secretRef:
+                name: ${APPNAME}-github-runners-regtoken
+          image: quay.io/evryfs/github-actions-runner:master
+          imagePullPolicy: Always
+          name: runner
+          volumeMounts:
+            - mountPath: /certs
+              name: docker-certs
+            - mountPath: /home/runner/_diag
+              name: runner-diag
+            - mountPath: /home/runner/_work
+              name: runner-work
+            - mountPath: /home/runner/.m2
+              name: mvn-repo
+        - args:
+            - --mtu=1430
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: /certs
+          image: docker:20.10-dind
+          imagePullPolicy: Always
+          name: docker
+          resources: {}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/lib/docker
+              name: docker-storage
+            - mountPath: /certs
+              name: docker-certs
+            - mountPath: /home/runner/_work
+              name: runner-work
+        - image: quay.io/evryfs/github-actions-runner-metrics:v0.0.3
+          name: exporter
+          ports:
+            - containerPort: 3903
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /_diag
+              name: runner-diag
+              readOnly: true
+      volumes:
+        - emptyDir: {}
+          name: runner-work
+        - emptyDir: {}
+          name: runner-diag
+        - emptyDir: {}
+          name: mvn-repo
+        - emptyDir: {}
+          name: docker-storage
+        - emptyDir: {}
+          name: docker-certs
+  reconciliationPeriod: 1m
+  repository: ${APPNAME}
+  tokenRef:
+    key: GH_TOKEN
+    name: actions-runner
