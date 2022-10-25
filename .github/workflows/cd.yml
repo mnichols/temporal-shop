@@ -127,6 +127,7 @@ jobs:
         run: |
           CTX=$(kubectl config current-context)
           IMG=${{ steps.build-image.outputs.imageFullName }}:${{ steps.split.outputs._0 }}
+          ID=$(aws sts get-caller-identity)
           echo "deploying to $CTX => $IMG"
           $(cd kustomize/web/overlays/prod && \
             kustomize edit set image amazonaws.com/web="$IMG")
