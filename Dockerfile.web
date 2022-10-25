@@ -1,43 +1,8 @@
-# Stage 1: Build
-FROM golang:1.18-alpine3.15 AS builder
-
-# Install build tools
-RUN apk add --update --no-cache ca-certificates git make openssh
-
-# Making sure that dependency is not touched
-ENV GOFLAGS="-mod=readonly"
-
-WORKDIR /work
-
-# Configure git token for private repositories
-ARG GIT_TOKEN
-RUN git config --global init.defaultBranch main
-RUN git init
-RUN git config --global url."https://$GIT_TOKEN@github.com".insteadOf "https://github.com"
-
-# Copy go mod dependencies and build cache
-COPY go.mod ./
-COPY go.sum ./
-
-RUN go mod download
-
-COPY . .
-
-# RUN cd ./web/ui && npm i
-
-# need to make clean first in case binaries to be built are stale
-# RUN make clean && CGO_ENABLED=0 make bins
-
-# Stage 2: GTM Applications
 FROM alpine:3.16 AS gtmapps
-
-RUN apk --no-cache upgrade
-RUN apk add --update bash ca-certificates git python3
-RUN apk add --no-cache tzdata
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
 # this is the `/web/bff/cmd/bff/main.go` binary being run
-COPY --from=builder /work/web /usr/local/bin/app
+COPY web app
 CMD ["/usr/local/bin/app"]
