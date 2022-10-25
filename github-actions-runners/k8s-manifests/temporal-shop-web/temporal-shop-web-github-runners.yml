@@ -39,7 +39,7 @@ spec:
               value: temporal-shop
           envFrom:
             - secretRef:
-                name: ${APPNAME}-github-runners-regtoken
+                name: temporal-shop-github-runners-regtoken
           image: quay.io/evryfs/github-actions-runner:master
           imagePullPolicy: Always
           name: runner
