@@ -15,7 +15,10 @@ LINKER_FLAGS := -X $(APPPKG).BuildDate=$(DATE) -X $(APPPKG).Commit=$(COMMIT) -X 
 web:
 	@go build -ldflags "$(LINKER_FLAGS)" -o web ./web/bff/cmd/bff/*.go
 
-bins: web
+web/bff/generated:
+	@cd ./web/ui && npm run build
+
+bins: web web/bff/generated
 
 test:
 	go test -race -timeout=5m -cover -count=1  ./...
