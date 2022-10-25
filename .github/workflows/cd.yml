@@ -7,6 +7,8 @@ on:
 #      - main
 env:
   AWS_REGION: us-east-1
+  CLUSTER_NAME: sa-prod
+  GH_ACTIONS_ROLE: arn:aws:iam::429214323166:role/github-actions-role
   ECR_REPOSITORY: temporal-shop/web
   SLACK_CHANNEL: C038377FSCF #team-gtm
   GOPRIVATE: github.com/temporalio
@@ -24,6 +26,11 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
       #### asdf steps
       #### TODO replace with a composite action : https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
       - name: Setup asdf
@@ -48,12 +55,7 @@ jobs:
           cd web/ui && npm i
       - name: Build
         run: cd web/ui && npm run build
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: arn:aws:iam::429214323166:role/github-actions-role
-          aws-region: us-east-1
-      - name: Deploy Web UI
+      - name: Publish Web UI
         run: aws s3 sync web/bff/generated s3://temporal-sa/temporal-shop/web
   bff:
     runs-on: temporal-shop #this should be in the CR created for the runner
@@ -64,6 +66,12 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
       #### asdf steps
       #### TODO replace with a composite action : https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
       - name: Setup asdf
@@ -104,7 +112,7 @@ jobs:
           dockerfile: Dockerfile.web
       - name: Update Kubeconfig
         run: |
-          cicd/scripts/update-kubeconfig.sh
+          aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
         shell: bash
       - name: Split Tags
         uses: jungwinter/split@v2
@@ -112,13 +120,6 @@ jobs:
         with:
           separator: ','
           msg: ${{ steps.build-image.outputs.tags }}
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: arn:aws:iam::429214323166:role/github-actions-role
-          aws-region: us-east-1
-      - name: Public Web UI
-        run: aws s3 sync ./web/bff/generated s3://temporal-sa/temporal-shop/web
       - name: Deploy
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
