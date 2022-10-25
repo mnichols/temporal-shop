@@ -1,6 +1,6 @@
 module github.com/temporalio/temporal-shop
 
-go 1.18
+go 1.19
 
 require (
 	github.com/bdandy/go-errors v1.2.2

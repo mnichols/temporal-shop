@@ -4,5 +4,5 @@ FROM alpine:3.16 AS gtmapps
 EXPOSE 8080
 
 # this is the `/web/bff/cmd/bff/main.go` binary being run
-COPY web app
+COPY webapp app
 CMD ["/usr/local/bin/app"]

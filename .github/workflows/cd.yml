@@ -84,11 +84,11 @@ jobs:
         uses: asdf-vm/actions/install@v1
       #### end asdf steps
       - name: Verify dependencies
-        run: go mod verify
+        run: go mod tidy && go mod verify
       - name: Build
         env:
           LINKER_FLAGS: ""
-        run: go build -o web ./web/bff/cmd/bff/main.go
+        run: cd web && go build -o ../webapp bff/cmd/bff/main.go
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
