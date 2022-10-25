@@ -88,7 +88,7 @@ jobs:
       - name: Build
         env:
           LINKER_FLAGS: ""
-        run: go build -ldflags "$(LINKER_FLAGS)" -o web ./web/bff/cmd/bff/*.go
+        run: go build -o web ./web/bff/cmd/bff/main.go
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
