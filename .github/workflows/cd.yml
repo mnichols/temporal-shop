@@ -114,7 +114,11 @@ jobs:
           dockerfile: Dockerfile.web
       - name: Update Kubeconfig
         run: |
+          ID=$(aws sts get-caller-identity)
+          echo "prior to eks update-kubeconfig => $ID"
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
+          CFG=$(cat .kube/config)
+          echo $CFG
         shell: bash
       - name: Split Tags
         uses: jungwinter/split@v2
@@ -126,6 +130,8 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
+          ID=$(aws sts get-caller-identity)
+          echo "prior to kubectl config => $ID"
           CTX=$(kubectl config current-context)
           IMG=${{ steps.build-image.outputs.imageFullName }}:${{ steps.split.outputs._0 }}
           echo "deploying to $CTX => $IMG"
