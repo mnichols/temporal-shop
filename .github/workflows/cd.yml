@@ -117,7 +117,7 @@ jobs:
           ID=$(aws sts get-caller-identity)
           echo "prior to eks update-kubeconfig => $ID"
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
-          CFG=$(cat .kube/config)
+          CFG=$(cat /home/runner/.kube/config)
           echo $CFG
         shell: bash
       - name: Split Tags
