@@ -10,13 +10,10 @@ env:
   AWS_ACCOUNT_ID: 429214323166
   CLUSTER_NAME: sa-prod
   GH_ACTIONS_ROLE: arn:aws:iam::429214323166:role/github-actions-role
-  EKS_ACCESS_ROLE: arn:aws:iam::429214323166:role/sa-eks-access-role
   ECR_REPOSITORY: temporal-shop/web
   SLACK_CHANNEL: C038377FSCF #team-gtm
   GOPRIVATE: github.com/temporalio
   GOVERSION: '^1.18.4'
-  MY_PAT: ${{ secrets.MY_PAT }}
-  SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
 
 jobs:
   ui:
