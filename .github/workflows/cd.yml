@@ -126,9 +126,6 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          aws sts assume-role --role-arn ${{ env.GH_ACTIONS_ROLE }} --role-session-name gh-actions-eks-access
-          ID=$(aws sts get-caller-identity)
-          echo "prior to kubectl config => $ID"
           CTX=$(kubectl config current-context)
           IMG=${{ steps.build-image.outputs.imageFullName }}:${{ steps.split.outputs._0 }}
           echo "deploying to $CTX => $IMG"
