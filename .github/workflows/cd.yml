@@ -114,7 +114,7 @@ jobs:
           dockerfile: Dockerfile.web
       - name: Update Kubeconfig
         run: |
-          aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.EKS_ACCESS_ROLE }} --region ${{ env.AWS_REGION }}
+          aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
         shell: bash
       - name: Split Tags
         uses: jungwinter/split@v2
