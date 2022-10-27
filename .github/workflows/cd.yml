@@ -53,6 +53,9 @@ jobs:
       - name: Dependencies
         run: |
           cd web/ui && npm i
+      - name: Test
+        run: |
+          cd web/ui && npm run test
       - name: Build
         run: cd web/ui && npm run build
       - name: Publish Web UI
