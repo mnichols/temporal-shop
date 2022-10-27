@@ -26,7 +26,6 @@ func TestLoad(t *testing.T) {
 	A.NoError(err)
 	A.Equal(os.Getenv("FOO_BAR"), "foobar")
 	A.Equal(os.Getenv("BAH_QUX"), "boom")
-	A.Equal(os.Getenv("MY_DUNDER_PROP"), "tada")
 }
 
 func TestUnmarshal(t *testing.T) {
