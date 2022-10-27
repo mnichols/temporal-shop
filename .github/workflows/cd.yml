@@ -55,6 +55,7 @@ jobs:
           cd web/ui && npm i
       - name: Test
         run: |
+          npx playwright install
           cd web/ui && npm run test
       - name: Build
         run: cd web/ui && npm run build
