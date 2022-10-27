@@ -96,7 +96,7 @@ jobs:
       - name: Build
         run: |
           BUILD_PKG="github.com/${{ github.repository }}/web/bff/build"
-          LINKER_FLAGS="-X '$(BUILD_PKG).Commit=${{ env.SHORT_SHA }}' -X '$(BUILD_PKG).Version=${{ github.ref }}' -X '$(BUILD_PKG).BuildDate=${{ github.event.repository.updated_at}}'"
+          LINKER_FLAGS="-X '${BUILD_PKG}.Commit=${{ env.SHORT_SHA }}' -X '${BUILD_PKG}.Version=${{ github.ref }}' -X '${BUILD_PKG}.BuildDate=${{ github.event.repository.updated_at}}'"
           cd web && go build -ldflags "$(LINKER_FLAGS)" -o ../webapp bff/cmd/bff/main.go
       - name: Login to Amazon ECR
         id: login-ecr
