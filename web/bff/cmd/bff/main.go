@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/temporalio/temporal-shop/web/bff/build"
 	"github.com/temporalio/temporal-shop/web/bff/config"
 	"github.com/temporalio/temporal-shop/web/bff/internal/clients"
 	temporalClient "github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
@@ -49,9 +50,14 @@ func main() {
 	if logger, err = log.NewLogger(ctx, appCfg.Log); err != nil {
 		panic("failed to create logger" + err.Error())
 	}
+	logger = log.WithFields(logger, log.Fields{
+		"version":    build.Version,
+		"build_date": build.BuildDate,
+		"commit":     build.Commit,
+	})
 	ctx = log.WithLogger(ctx, logger)
 
-	logger.Info("config", map[string]interface{}{"cfg": appCfg})
+	logger.Info("config", log.Fields{"cfg": appCfg})
 	// clients
 	clients := clients.MustGetClients(ctx,
 		clients.WithTemporal(temporalClient.NewClients(ctx,

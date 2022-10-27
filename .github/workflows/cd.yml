@@ -14,6 +14,7 @@ env:
   SLACK_CHANNEL: C038377FSCF #team-gtm
   GOPRIVATE: github.com/temporalio
   GOVERSION: '^1.18.4'
+  SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
 
 jobs:
   ui:
@@ -93,9 +94,10 @@ jobs:
       - name: Verify dependencies
         run: go mod tidy && go mod verify
       - name: Build
-        env:
-          LINKER_FLAGS: ""
-        run: cd web && go build -o ../webapp bff/cmd/bff/main.go
+        run: |
+          BUILD_PKG="github.com/${{ github.repository }}/web/bff/build"
+          LINKER_FLAGS="-X '$(BUILD_PKG).Commit=${{ env.SHORT_SHA }}' -X '$(BUILD_PKG).Version=${{ github.ref }}' -X '$(BUILD_PKG).BuildDate=${{ github.event.repository.updated_at}}'"
+          cd web && go build -ldflags "$(LINKER_FLAGS)" -o ../webapp bff/cmd/bff/main.go
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -109,16 +111,16 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           registry: ${{ steps.login-ecr.outputs.registry }}
           dockerfile: Dockerfile.web
-      - name: Update Kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
-        shell: bash
       - name: Split Tags
         uses: jungwinter/split@v2
         id: split
         with:
           separator: ','
           msg: ${{ steps.build-image.outputs.tags }}
+      - name: Update Kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
+        shell: bash
       - name: Deploy
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
