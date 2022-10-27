@@ -37,8 +37,8 @@ func (e neuteredStatFile) Stat() (os.FileInfo, error) {
 	if s.IsDir() {
 	LOOP:
 		for {
-			fl, err := e.File.Readdir(e.readDirBatchSize)
-			switch err {
+			fl, ferr := e.File.Readdir(e.readDirBatchSize)
+			switch ferr {
 			case io.EOF:
 				break LOOP
 			case nil:
@@ -48,7 +48,7 @@ func (e neuteredStatFile) Stat() (os.FileInfo, error) {
 					}
 				}
 			default:
-				return nil, err
+				return nil, ferr
 			}
 		}
 		return nil, os.ErrNotExist

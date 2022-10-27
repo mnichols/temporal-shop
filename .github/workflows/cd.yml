@@ -96,6 +96,8 @@ jobs:
       #### end asdf steps
       - name: Verify dependencies
         run: cd web && go mod tidy && go mod verify
+      - name: Lint
+        run: cd web && golangci-lint run
       - name: Test
         run: cd web && go test -race -timeout=5m -cover -count=1  ./...
       - name: Build

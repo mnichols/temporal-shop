@@ -29,7 +29,7 @@ type appConfig struct {
 }
 
 func main() {
-	ctx := context.Background()
+	ctx, done := context.WithCancel(context.Background())
 	// config root
 	config.MustLoad()
 	var err error
@@ -37,8 +37,8 @@ func main() {
 	appCfg := &appConfig{}
 	config.MustUnmarshalAll(appCfg)
 
-	ctx, done := context.WithCancel(context.Background())
-	g, ctx := errgroup.WithContext(ctx)
+	var g *errgroup.Group
+	g, ctx = errgroup.WithContext(ctx)
 
 	// set up signal listener
 	quit := make(chan os.Signal, 1)

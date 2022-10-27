@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -46,7 +45,7 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) err
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, 1048576)
-	bodyBytes, err := ioutil.ReadAll(r.Body)
+	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read my body %w", err)
 	}
@@ -54,8 +53,8 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) err
 	if err != nil {
 		return err
 	}
-	err = DecodeReadCloser(ioutil.NopCloser(bytes.NewBuffer(bodyBytes)), dst)
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	err = DecodeReadCloser(io.NopCloser(bytes.NewBuffer(bodyBytes)), dst)
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 	return err
 }
 
