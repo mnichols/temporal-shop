@@ -52,10 +52,9 @@ jobs:
       #### end asdf steps
       - name: Dependencies
         run: |
-          cd web/ui && npm i
+          cd web/ui && npm i && npx playwright install
       - name: Test
         run: |
-          npx playwright install
           cd web/ui && npm run test
       - name: Build
         run: cd web/ui && npm run build
