@@ -32,7 +32,8 @@ jobs:
           role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
       - name: asdf
-        uses: mnichols/asdf-composite-action
+        id: asdf
+        uses: mnichols/asdf-composite-action@v1
       #### asdf steps
       #### TODO replace with a composite action : https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
 #      - name: Setup asdf
