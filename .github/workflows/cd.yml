@@ -13,7 +13,6 @@ env:
   ECR_REPOSITORY: temporal-shop/web
   SLACK_CHANNEL: C038377FSCF #team-gtm
   GOPRIVATE: github.com/temporalio
-  GOVERSION: '^1.18.4'
   SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
   S3_DIR: "s3://temporal-sa/temporal-shop"
 jobs:
@@ -22,18 +21,22 @@ jobs:
     outputs:
       s3-dir: ${{ steps.s3.dir }}
       builds-dir: ${{ steps.builds.dir }}
-      bff-dir: ${{ steps.bff.dir }}
+      builds-bff-dir: ${{ steps.builds-bff.dir }}
+      builds-web-dir: ${{ steps.builds-web.dir }}
       web-dir: ${{ steps.web.dir }}
     steps:
       - id: s3
         run: echo "dir=${{ env.S3_DIR }}" >> $GITHUB_OUTPUT
       - id: builds
         run: echo "dir=${{ steps.s3.dir }}/builds/${{ env.SHORT_SHA }}" >> $GITHUB_OUTPUT
-      - id: bff
+      - id: builds-bff
         run: echo "dir=${{ steps.builds.dir }}/bff" >> $GITHUB_OUTPUT
-      - id: web
+      - id: builds-web
         run: echo "dir=${{ steps.builds.dir }}/web" >> $GITHUB_OUTPUT
+      - id: web
+        run: echo "dir=${{ steps.s3.dir }}" >> $GITHUB_OUTPUT
   ui:
+    needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
     permissions:
       id-token: write
@@ -58,8 +61,9 @@ jobs:
       - name: Build
         run: cd web/ui && npm run build
       - name: Publish Web UI
-        run: aws s3 sync web/bff/generated ${{ jobs.cfg.outputs.web-dir }}
+        run: aws s3 sync web/bff/generated ${{ needs.jobs.cfg.outputs.web-dir }}
   bff:
+    needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
     permissions:
       id-token: write
@@ -89,10 +93,10 @@ jobs:
           echo ${LINKER_FLAGS}
           cd web && go build -ldflags "${LINKER_FLAGS}" -o ../build/bff bff/cmd/bff/main.go
       - name: Store Binary
-        run: aws s3 sync build ${{ jobs.cfg.outputs.bff-dir }}
+        run: aws s3 sync build ${{ needs.jobs.cfg.outputs.bff-dir }}
   deploy:
     runs-on: temporal-shop #this should be in the CR created for the runner
-    needs: [ui,bff]
+    needs: [cfg,ui,bff]
     permissions:
       id-token: write
       contents: read
@@ -108,7 +112,7 @@ jobs:
       - name: fetch artifacts
         run: |
           mkdir build
-          aws s3 sync ${{ jobs.cfg.outputs.builds-dir }} build
+          aws s3 sync ${{ needs.jobs.cfg.outputs.builds-dir }} build
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -145,4 +149,4 @@ jobs:
           kustomize build kustomize/web/overlays/prod | kubectl apply -f -
       - name: Deploy UI
         run: |
-          aws s3 sync build/web s3://temporal-sa/temporal-shop/web
+          aws s3 sync build/web ${{ needs.jobs.cfg.outputs.web.dir }}
