@@ -15,11 +15,12 @@ env:
   GOPRIVATE: github.com/temporalio
   GOVERSION: '^1.18.4'
   SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
-
+  ARTIFACTS_S3_DIR: "s3://temporal-sa/temporal-shop/builds/${{ env.SHORT_SHA }}"
+  BFF_ARTIFACTS_DIR: "${{ env.ARTIFACTS_S3_DIR }}/bff"
+  UI_ARTIFACTS_DIR: "${{ env.ARTIFACTS_UI_DIR }}/web"
 jobs:
   ui:
     runs-on: temporal-shop #this should be in the CR created for the runner
-    #    needs: [run-tests]
     permissions:
       id-token: write
       contents: read
@@ -43,10 +44,9 @@ jobs:
       - name: Build
         run: cd web/ui && npm run build
       - name: Publish Web UI
-        run: aws s3 sync web/bff/generated s3://temporal-sa/temporal-shop/web
+        run: aws s3 sync web/bff/generated ${{ env.UI_ARTIFACTS_DIR }}
   bff:
     runs-on: temporal-shop #this should be in the CR created for the runner
-#    needs: [run-tests]
     permissions:
       id-token: write
       contents: read
@@ -69,10 +69,32 @@ jobs:
         run: cd web && go test -race -timeout=5m -cover -count=1  ./...
       - name: Build
         run: |
+          mkdir build
           BUILD_PKG="github.com/${{ github.repository }}/web/bff/build"
           LINKER_FLAGS="-X '${BUILD_PKG}.Commit=${{ env.SHORT_SHA }}' -X '${BUILD_PKG}.Version=${{ github.ref_name }}' -X '${BUILD_PKG}.BuildDate=${{ github.event.repository.updated_at}}'"
           echo ${LINKER_FLAGS}
-          cd web && go build -ldflags "${LINKER_FLAGS}" -o ../webapp bff/cmd/bff/main.go
+          cd web && go build -ldflags "${LINKER_FLAGS}" -o ../build/bff bff/cmd/bff/main.go
+      - name: Store Binary
+        run: aws s3 sync build ${{ env.BFF_ARTIFACTS_DIR }}
+  deploy:
+    runs-on: temporal-shop #this should be in the CR created for the runner
+    needs: [ui,bff]
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: asdf
+        id: asdf
+        uses: mnichols/asdf-composite-action@v1
+      - name: fetch artifacts
+        run: |
+          mkdir build
+          aws s3 sync ${{ env.ARTIFACTS_S3_DIR }} build
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -96,7 +118,7 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
         shell: bash
-      - name: Deploy
+      - name: Deploy BFF
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
@@ -107,3 +129,6 @@ jobs:
             kustomize edit set image amazonaws.com/web="$IMG")
 
           kustomize build kustomize/web/overlays/prod | kubectl apply -f -
+      - name: Deploy UI
+        run: |
+          aws s3 sync build/web s3://temporal-sa/temporal-shop/web
