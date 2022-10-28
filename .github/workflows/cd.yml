@@ -19,22 +19,22 @@ jobs:
   cfg:
     runs-on: temporal-shop #this should be in the CR created for the runner
     outputs:
-      s3-dir: ${{ steps.s3.dir }}
-      builds-dir: ${{ steps.builds.dir }}
-      builds-bff-dir: ${{ steps.builds-bff.dir }}
-      builds-web-dir: ${{ steps.builds-web.dir }}
-      web-dir: ${{ steps.web.dir }}
+      s3-dir: ${{ steps.s3.outputs.dir }}
+      builds-dir: ${{ steps.builds.outputs.dir }}
+      builds-bff-dir: ${{ steps.builds-bff.outputs.dir }}
+      builds-web-dir: ${{ steps.builds-web.outputs.dir }}
+      web-dir: ${{ steps.web.outputs.dir }}
     steps:
       - id: s3
         run: echo "dir=${{ env.S3_DIR }}" >> $GITHUB_OUTPUT
       - id: builds
-        run: echo "dir=${{ steps.s3.dir }}/builds/${{ env.SHORT_SHA }}" >> $GITHUB_OUTPUT
+        run: echo "dir=${{ steps.s3.outputs.dir }}/builds/${{ env.SHORT_SHA }}" >> $GITHUB_OUTPUT
       - id: builds-bff
-        run: echo "dir=${{ steps.builds.dir }}/bff" >> $GITHUB_OUTPUT
+        run: echo "dir=${{ steps.builds.outputs.dir }}/bff" >> $GITHUB_OUTPUT
       - id: builds-web
-        run: echo "dir=${{ steps.builds.dir }}/web" >> $GITHUB_OUTPUT
+        run: echo "dir=${{ steps.builds.outputs.dir }}/web" >> $GITHUB_OUTPUT
       - id: web
-        run: echo "dir=${{ steps.s3.dir }}" >> $GITHUB_OUTPUT
+        run: echo "dir=${{ steps.s3.outputs.dir }}/web" >> $GITHUB_OUTPUT
   ui:
     needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
