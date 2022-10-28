@@ -111,7 +111,8 @@ jobs:
         uses: mnichols/asdf-composite-action@v1
       - name: fetch artifacts
         run: |
-          mkdir build
+          rm -rf build
+          mkdir -p build
           aws s3 sync ${{ needs.cfg.outputs.builds-dir }} build
       - name: Login to Amazon ECR
         id: login-ecr
