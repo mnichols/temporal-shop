@@ -61,7 +61,7 @@ jobs:
       - name: Build
         run: cd web/ui && npm run build
       - name: Publish Web UI
-        run: aws s3 sync web/bff/generated ${{ needs.jobs.cfg.outputs.builds-web.dir }}
+        run: aws s3 sync web/bff/generated ${{ needs.cfg.outputs.builds-web.dir }}
   bff:
     needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
@@ -93,7 +93,7 @@ jobs:
           echo ${LINKER_FLAGS}
           cd web && go build -ldflags "${LINKER_FLAGS}" -o ../build/bff bff/cmd/bff/main.go
       - name: Store Binary
-        run: aws s3 sync build ${{ needs.jobs.cfg.outputs.builds-bff.dir }}
+        run: aws s3 sync build ${{ needs.cfg.outputs.builds-bff.dir }}
   deploy:
     runs-on: temporal-shop #this should be in the CR created for the runner
     needs: [cfg,ui,bff]
@@ -112,7 +112,7 @@ jobs:
       - name: fetch artifacts
         run: |
           mkdir build
-          aws s3 sync ${{ needs.jobs.cfg.outputs.builds-dir }} build
+          aws s3 sync ${{ needs.cfg.outputs.builds-dir }} build
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -149,4 +149,4 @@ jobs:
           kustomize build kustomize/web/overlays/prod | kubectl apply -f -
       - name: Deploy UI
         run: |
-          aws s3 sync build/web ${{ needs.jobs.cfg.outputs.web.dir }}
+          aws s3 sync build/web ${{ needs.cfg.outputs.web.dir }}
