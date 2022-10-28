@@ -60,7 +60,7 @@ jobs:
 #          cd web/ui && npx playwright install && npm run test
       - name: Build
         run: cd web/ui && npm run build
-      - name: Publish Web UI
+      - name: Store UI
         run: aws s3 sync web/bff/generated ${{ needs.cfg.outputs.builds-web-dir }}
   bff:
     needs: [cfg]
@@ -126,7 +126,7 @@ jobs:
           # tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           registry: ${{ steps.login-ecr.outputs.registry }}
-          dockerfile: Dockerfile.web
+          dockerfile: Dockerfile.bff
       - name: Split Tags
         uses: jungwinter/split@v2
         id: split
