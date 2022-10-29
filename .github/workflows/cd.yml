@@ -42,7 +42,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Clone
+      - name: clone
         uses: actions/checkout@v3
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -52,15 +52,15 @@ jobs:
       - name: asdf
         id: asdf
         uses: mnichols/asdf-composite-action@v1
-      - name: Dependencies
+      - name: dependencies
         run: |
           cd web/ui && npm i
-#      - name: Test
+#      - name: test
 #        run: |
 #          cd web/ui && npx playwright install && npm run test
-      - name: Build
+      - name: build
         run: cd web/ui && npm run build
-      - name: Store UI
+      - name: store ui artifact
         run: aws s3 sync web/bff/generated ${{ needs.cfg.outputs.builds-web-dir }}
   bff:
     needs: [cfg]
@@ -69,7 +69,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Clone
+      - name: clone
         uses: actions/checkout@v3
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -79,20 +79,20 @@ jobs:
       - name: asdf
         id: asdf
         uses: mnichols/asdf-composite-action@v1
-      - name: Verify dependencies
+      - name: dependencies
         run: cd web && go mod tidy && go mod verify
-      - name: Lint
+      - name: lint
         run: cd web && golangci-lint run
-      - name: Test
+      - name: test
         run: cd web && go test -race -timeout=5m -cover -count=1  ./...
-      - name: Build
+      - name: build
         run: |
           mkdir build
           BUILD_PKG="github.com/${{ github.repository }}/web/bff/build"
           LINKER_FLAGS="-X '${BUILD_PKG}.Commit=${{ env.SHORT_SHA }}' -X '${BUILD_PKG}.Version=${{ github.ref_name }}' -X '${BUILD_PKG}.BuildDate=${{ github.event.repository.updated_at}}'"
           echo ${LINKER_FLAGS}
           cd web && go build -ldflags "${LINKER_FLAGS}" -o ../build/bff bff/cmd/bff/main.go
-      - name: Store Binary
+      - name: store binary artifact
         run: aws s3 sync build ${{ needs.cfg.outputs.builds-bff-dir }}
   deploy:
     runs-on: temporal-shop #this should be in the CR created for the runner
@@ -101,7 +101,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Configure AWS Credentials
+      - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
@@ -114,7 +114,7 @@ jobs:
           rm -rf build
           mkdir -p build
           aws s3 sync ${{ needs.cfg.outputs.builds-dir }} build
-      - name: Login to Amazon ECR
+      - name: login to amazon ecr
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build, tag, and push to AWS ECR
@@ -127,17 +127,17 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           registry: ${{ steps.login-ecr.outputs.registry }}
           dockerfile: Dockerfile.bff
-      - name: Split Tags
+      - name: split tags
         uses: jungwinter/split@v2
         id: split
         with:
           separator: ','
           msg: ${{ steps.build-image.outputs.tags }}
-      - name: Update Kubeconfig
+      - name: update kubeconfig
         run: |
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
         shell: bash
-      - name: Deploy BFF
+      - name: deploy bff
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
@@ -148,6 +148,8 @@ jobs:
             kustomize edit set image amazonaws.com/web="$IMG")
 
           kustomize build kustomize/web/overlays/prod | kubectl apply -f -
-      - name: Deploy UI
+      - name: deploy ui
         run: |
           aws s3 sync build/web ${{ needs.cfg.outputs.web-dir }}
+      - name: clean artifacts
+        run: aws s3 rm --recursive ${{ needs.cfg.outputs.builds-dir }}
