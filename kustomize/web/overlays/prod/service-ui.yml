@@ -4,7 +4,7 @@ metadata:
   name: ui
 spec:
   type: ExternalName
-  externalName: temporal-sa.s3.amazonaws.com/temporal-shop/web
+  externalName: temporal-sa.s3.amazonaws.com
   ports:
     - name: http
       protocol: TCP

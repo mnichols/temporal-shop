@@ -9,6 +9,15 @@ spec:
       - /temporal-shop
     forceSlash: false
 ---
+# Replace the path with /foo
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: replacepath
+spec:
+  replacePath:
+    path: /temporal-shop/web
+---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
@@ -27,9 +36,9 @@ spec:
       # only support "Rule".
       kind: Rule
       # (optional) Priority disambiguates rules of the same length, for route matching.
-      priority: 12
+      priority: 11
       middlewares:
-        - name: stripprefix
+        - name: replacepath
         # (default 1) A weight used by the weighted round-robin strategy (WRR).
         # (default true) PassHostHeader controls whether to leave the request's Host
         # Header as it was before it reached the proxy, or whether to let the proxy set it
