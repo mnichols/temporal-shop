@@ -3,7 +3,6 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: stripprefix
-  namespace: temporal-shop
 spec:
   stripPrefix:
     prefixes:
@@ -15,7 +14,6 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: replacepath
-  namespace: temporal-shop
 spec:
   replacePath:
     path: /temporal-shop/web
@@ -24,7 +22,6 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: ingressroutetemporal-shop
-  namespace: temporal-shop
 spec:
   entryPoints:
     - web
