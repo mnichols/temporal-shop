@@ -5,3 +5,4 @@ namespace: temporal-shop
 resources:
   - deployment.yml
   - service-web.yml
+  - namespace.yml
