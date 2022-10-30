@@ -4,4 +4,4 @@ commonLabels:
 namespace: temporal-shop
 resources:
   - deployment.yml
-  - service.yml
+  - service-web.yml
