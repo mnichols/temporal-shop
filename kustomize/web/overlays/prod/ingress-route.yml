@@ -44,6 +44,7 @@ spec:
         # to the destination (backend) host.
       services:
         - name: ui
+          namespace: temporal-shop
           port: 80
           passHostHeader: true
           responseForwarding:
@@ -69,6 +70,7 @@ spec:
         # to the destination (backend) host.
       services:
         - name: web
+          namespace: temporal-shop
           port: 80
           passHostHeader: true
           responseForwarding:
