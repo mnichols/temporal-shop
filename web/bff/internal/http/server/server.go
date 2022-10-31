@@ -11,6 +11,7 @@ import (
 	"github.com/temporalio/temporal-shop/web/bff/internal/instrumentation/log"
 	"logur.dev/logur"
 	"net/http"
+	"net/http/httputil"
 )
 
 type Server struct {
@@ -47,6 +48,14 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 	s.router.Use(middleware.Logger(s.logger))
 	appHandlers.Register(s.router)
 
+	s.router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		dump, err := httputil.DumpRequest(r, true)
+		if err != nil {
+			w.Write([]byte(fmt.Sprintf("pong but error ", err.Error())))
+			return
+		}
+		w.Write(dump)
+	})
 	s.inner = &http.Server{
 		Addr:    fmt.Sprintf(":%s", s.cfg.Port),
 		Handler: s.router,
