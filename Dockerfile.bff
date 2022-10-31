@@ -6,4 +6,6 @@ EXPOSE 8080
 # this is the `/web/bff/cmd/bff/main.go` binary being run
 COPY build .
 COPY build/bff/bff /usr/local/bin/app
+RUN echo $(ls -R build)
+RUN echo $(ls -R /usr/local/bin)
 CMD ["/usr/local/bin/app"]
