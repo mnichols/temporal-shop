@@ -1,8 +1,10 @@
-FROM alpine:3.16 AS gtmapps
+FROM alpine:3.16
 
+WORKDIR /work
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
 # this is the `/web/bff/cmd/bff/main.go` binary being run
-COPY build/bff/bff /usr/local/bin/app
+COPY build .
+COPY /work/bff/bff /usr/local/bin/app
 CMD ["/usr/local/bin/app"]
