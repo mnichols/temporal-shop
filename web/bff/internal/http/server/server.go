@@ -51,10 +51,14 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 	s.router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		dump, err := httputil.DumpRequest(r, true)
 		if err != nil {
-			w.Write([]byte(fmt.Sprintf("pong but error ", err.Error())))
+			if i, werr := w.Write([]byte(fmt.Sprintf("pong but error %s", err.Error()))); werr != nil {
+				fmt.Println("wrote ", i, " bytes", werr)
+			}
 			return
 		}
-		w.Write(dump)
+		if i, werr := w.Write(dump); werr != nil {
+			fmt.Println("wrote ", i, "bytes", werr)
+		}
 	})
 	s.inner = &http.Server{
 		Addr:    fmt.Sprintf(":%s", s.cfg.Port),
