@@ -46,7 +46,7 @@ spec:
         - name: ui
           namespace: temporal-shop
           port: 80
-          passHostHeader: true
+          passHostHeader: false
           responseForwarding:
             # (default 100ms) Interval between flushes of the buffered response body to the client.
             flushInterval: 100ms
