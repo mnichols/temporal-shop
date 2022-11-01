@@ -36,30 +36,25 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 	for _, o := range opts {
 		o(s)
 	}
-
-	appHandlers, err := app.NewHandlers(
-		app.WithGeneratedAppDirectory(s.cfg.GeneratedAppDir),
-		app.WithTemporalClients(s.temporal),
-		app.WithMountPath(routes.GETApp.Raw),
-	)
-	if err != nil {
-		return nil, err
-	}
 	s.router.Use(middleware.Logger(s.logger))
-	appHandlers.Register(s.router)
 
-	s.router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		dump, err := httputil.DumpRequest(r, true)
+	if s.cfg.IsServingUI {
+		appHandlers, err := app.NewHandlers(
+			app.WithGeneratedAppDirectory(s.cfg.GeneratedAppDir),
+			app.WithTemporalClients(s.temporal),
+			app.WithMountPath(routes.GETApp.Raw),
+		)
 		if err != nil {
-			if i, werr := w.Write([]byte(fmt.Sprintf("pong but error %s", err.Error()))); werr != nil {
-				fmt.Println("wrote ", i, " bytes", werr)
-			}
-			return
+			return nil, err
 		}
-		if i, werr := w.Write(dump); werr != nil {
-			fmt.Println("wrote ", i, "bytes", werr)
-		}
-	})
+		appHandlers.Register(s.router)
+	}
+
+	s.router.Get("/ping", pingHandler)
+
+	s.router.Get("/health", healthHandler)
+	s.router.Get("/readiness", readinessHandler)
+
 	s.inner = &http.Server{
 		Addr:    fmt.Sprintf(":%s", s.cfg.Port),
 		Handler: s.router,
@@ -80,5 +75,24 @@ func (s *Server) Start(ctx context.Context) error {
 func (s *Server) Shutdown(ctx context.Context) {
 	if err := s.inner.Shutdown(ctx); err != nil {
 		s.logger.Error("failed to shutdown gracefully", logur.Fields{"err": err})
+	}
+}
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func readinessHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	dump, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		if i, werr := w.Write([]byte(fmt.Sprintf("pong but error %s", err.Error()))); werr != nil {
+			fmt.Println("wrote ", i, " bytes", werr)
+		}
+		return
+	}
+	if i, werr := w.Write(dump); werr != nil {
+		fmt.Println("wrote ", i, "bytes", werr)
 	}
 }

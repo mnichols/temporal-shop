@@ -116,7 +116,7 @@ func main() {
 
 	// wait for shutdown
 	if err := g.Wait(); err != nil {
-		panic("shutdown was not clean" + err.Error())
+		logger.Debug("shutdown completed ", log.Fields{"err": err})
 	}
 	logger.Info("goodbye")
 }
