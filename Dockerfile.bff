@@ -31,5 +31,4 @@ EXPOSE 8080
 
 # this is the `/cmd/gtm/main.go` binary being run
 COPY --from=builder /work/out/bff /usr/local/bin/bff
-COPY --from=builder /work/build/.env /usr/local/bin
 CMD ["/usr/local/bin/bff"]
