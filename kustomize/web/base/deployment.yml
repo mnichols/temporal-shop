@@ -18,6 +18,9 @@ spec:
         - name: web
           image: amazonaws.com/web
           imagePullPolicy: IfNotPresent
+          envFrom:
+            configMapRef:
+              name: app-cfg
           env:
             - name: TEMPORAL_CLOUD_CERT_PEM
               valueFrom:
