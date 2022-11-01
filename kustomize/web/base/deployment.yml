@@ -13,6 +13,7 @@ spec:
       labels:                    # The labels that will be applied to all of the pods in this deployment
         app: web
     spec:                        # Spec for the container which will run in the Pod
+      serviceAccountName: temporal-shop
       containers:
         - name: web
           image: amazonaws.com/web
