@@ -85,15 +85,6 @@ jobs:
         run: cd web && golangci-lint run
       - name: test
         run: cd web && go test -race -timeout=5m -cover -count=1  ./...
-      - name: build
-        run: |
-          mkdir build
-          BUILD_PKG="github.com/${{ github.repository }}/web/bff/build"
-          LINKER_FLAGS="-X '${BUILD_PKG}.Commit=${{ env.SHORT_SHA }}' -X '${BUILD_PKG}.Version=${{ github.ref_name }}' -X '${BUILD_PKG}.BuildDate=${{ github.event.repository.updated_at}}'"
-          echo ${LINKER_FLAGS}
-          cd web && go build -ldflags "${LINKER_FLAGS}" -o ../build/bff bff/cmd/bff/main.go
-      - name: store binary artifact
-        run: aws s3 sync build ${{ needs.cfg.outputs.builds-bff-dir }}
   deploy:
     runs-on: temporal-shop #this should be in the CR created for the runner
     needs: [cfg,ui,bff]
