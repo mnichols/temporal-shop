@@ -18,6 +18,22 @@ spec:
         - name: web
           image: amazonaws.com/web
           imagePullPolicy: IfNotPresent
+          env:
+            - name: TEMPORAL_CLOUD_CERT_PEM
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-cloud-cert
+                  key: pem
+            - name: TEMPORAL_CLOUD_CERT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-cloud-cert
+                  key: key
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe
+                  key: secret-key
           ports:
             - containerPort: 8080  # Should match the port number that the Go application listens on
           resources:
