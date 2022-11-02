@@ -76,15 +76,15 @@ jobs:
         with:
           role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: asdf
-        id: asdf
-        uses: mnichols/asdf-composite-action@v1
-      - name: dependencies
-        run: cd web && go mod tidy && go mod verify
-      - name: lint
-        run: cd web && golangci-lint run
-      - name: test
-        run: cd web && go test -race -timeout=5m -cover -count=1  ./...
+#      - name: asdf
+#        id: asdf
+#        uses: mnichols/asdf-composite-action@v1
+#      - name: dependencies
+#        run: cd web && go mod tidy && go mod verify
+#      - name: lint
+#        run: cd web && golangci-lint run
+#      - name: test
+#        run: cd web && go test -race -timeout=5m -cover -count=1  ./...
   deploy:
     runs-on: temporal-shop #this should be in the CR created for the runner
     needs: [cfg,ui,bff]
