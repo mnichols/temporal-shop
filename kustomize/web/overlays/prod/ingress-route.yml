@@ -9,14 +9,46 @@ spec:
       - /temporal-shop
     forceSlash: false
 ---
-# Replace the path with /foo
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: replacepath
+  name: force-index
 spec:
-  replacePath:
-    path: /temporal-shop/web
+  replacePathRegex:
+    regex: ^/temporal-shop/app(\\/*)$
+    replacement: /temporal-shop/app/index
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: force-html
+spec:
+  replacePathRegex:
+    regex: ^/temporal-shop/app/(.*)
+    replacement: /temporal-shop/app/$1.html
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: s3-svelte
+spec:
+  chain:
+    middlewares:
+      - name: force-index
+      - name: force-html
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: add-header
+spec:
+  headers:
+    customRequestHeaders:
+      Host: "temporal-sa.s3.amazonaws.com"
+      X-Forwarded-Host: "temporal-sa.s3.amazonaws.com"
+      X-Script-Name: "11111"
+    customResponseHeaders:
+      X-Custom-Response-Header: "22222"
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -35,9 +67,10 @@ spec:
       # only support "Rule".
       kind: Rule
       # (optional) Priority disambiguates rules of the same length, for route matching.
-      priority: 11
+      priority: 13
       middlewares:
-        - name: replacepath
+        - name: s3-svelte
+        - name: add-header
         # (default 1) A weight used by the weighted round-robin strategy (WRR).
         # (default true) PassHostHeader controls whether to leave the request's Host
         # Header as it was before it reached the proxy, or whether to let the proxy set it

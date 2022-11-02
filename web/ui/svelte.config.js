@@ -23,6 +23,7 @@ const config = {
 		adapter: adapter({
 			pages: '../bff/generated',
 			assets: '../bff/generated',
+			//fallback: 'index.html',
 		})
 	}
 };
