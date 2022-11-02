@@ -34,7 +34,7 @@ jobs:
       - id: builds-web
         run: echo "dir=${{ steps.builds.outputs.dir }}/web" >> $GITHUB_OUTPUT
       - id: web
-        run: echo "dir=${{ steps.s3.outputs.dir }}/web" >> $GITHUB_OUTPUT
+        run: echo "dir=${{ steps.s3.outputs.dir }}/app" >> $GITHUB_OUTPUT
   ui:
     needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
