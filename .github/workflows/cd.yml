@@ -77,15 +77,15 @@ jobs:
         with:
           role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-#      - name: asdf
-#        id: asdf
-#        uses: mnichols/asdf-composite-action@v1
-#      - name: dependencies
-#        run: cd web && go mod tidy && go mod verify
-#      - name: lint
-#        run: cd web && golangci-lint run
-#      - name: test
-#        run: cd web && go test -race -timeout=5m -cover -count=1  ./...
+      - name: asdf
+        id: asdf
+        uses: mnichols/asdf-composite-action@v1
+      - name: dependencies
+        run: cd web && go mod tidy && go mod verify
+      - name: lint
+        run: cd web && golangci-lint run
+      - name: test
+        run: cd web && go test -race -timeout=5m -cover -count=1  ./...
   deploy:
     runs-on: temporal-shop #this should be in the CR created for the runner
     needs: [cfg,ui,bff]
@@ -132,7 +132,7 @@ jobs:
         run: |
           CTX=$(kubectl config current-context)
           IMG=${{ steps.build-image.outputs.imageFullName }}:${{ steps.split.outputs._0 }}
-          echo "deploying to $CTX => $IMG"
+          echo "::notice title={deploying bff bin}::deploying to $CTX => $IMG"
           $(cd kustomize/web/overlays/prod && \
             kustomize edit set image amazonaws.com/web="$IMG")
 
@@ -143,8 +143,6 @@ jobs:
           aws s3 sync ${{ needs.cfg.outputs.s3-builds-app-dir }} ${{ needs.cfg.outputs.s3-app-dir }}
       - name: tag ui
         run: |
-          echo "s3api $(aws s3api help)"
-          echo "xargs $(which xargs)"
           aws s3api list-objects --bucket ${{ env.S3_BUCKET }} --prefix "${{ needs.cfg.outputs.s3-app-prefix }}" --query 'Contents[].[Key]' --output text | xargs -n 1 -P 10 aws s3api put-object-tagging --bucket ${{ env.S3_BUCKET }} --tagging 'TagSet=[{Key=security,Value=public}]' --key
       - name: clean artifacts
         run: aws s3 rm --recursive ${{ needs.cfg.outputs.s3-builds-dir }}
