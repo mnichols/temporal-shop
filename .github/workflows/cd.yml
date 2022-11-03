@@ -2,7 +2,7 @@ name: Temporal Shop Build Pipeline
 on:
   push:
     branches:
-      - svelteify
+      - main
 #  pull_request:
 #      - main
 env:
