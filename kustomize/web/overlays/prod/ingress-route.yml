@@ -15,7 +15,7 @@ metadata:
   name: force-index
 spec:
   replacePathRegex:
-    regex: ^/temporal-shop/app(\\/*)$
+    regex: ^/temporal-shop/app(\/*)$
     replacement: /temporal-shop/app/index
 ---
 apiVersion: traefik.containo.us/v1alpha1
@@ -68,8 +68,7 @@ spec:
       # (optional) Priority disambiguates rules of the same length, for route matching.
       priority: 13
       middlewares:
-        - name: force-index
-        - name: force-html
+        - name: s3-svelte
         - name: add-header
         # (default 1) A weight used by the weighted round-robin strategy (WRR).
         # (default true) PassHostHeader controls whether to leave the request's Host
