@@ -143,11 +143,8 @@ jobs:
           aws s3 sync ${{ needs.cfg.outputs.s3-builds-app-dir }} ${{ needs.cfg.outputs.s3-app-dir }}
       - name: tag ui
         run: |
-          $(aws s3api list-objects --bucket ${{ env.S3_BUCKET }} \
-            --prefix ${{ needs.cfg.outputs.s3-app-prefix }} \
-            --query 'Contents[].[Key]' \
-            --output text | xargs -n 1 -P 10 \
-            aws s3api put-object-tagging --bucket ${{ env.S3_BUCKET }} \
-            --tagging 'TagSet=[{Key=security,Value=public}]' --key)
+          echo "s3api $(aws s3api help)"
+          echo "xargs $(which xargs)"
+          aws s3api list-objects --bucket ${{ env.S3_BUCKET }} --prefix "${{ needs.cfg.outputs.s3-app-prefix }}" --query 'Contents[].[Key]' --output text | xargs -n 1 -P 10 aws s3api put-object-tagging --bucket ${{ env.S3_BUCKET }} --tagging 'TagSet=[{Key=security,Value=public}]' --key
       - name: clean artifacts
         run: aws s3 rm --recursive ${{ needs.cfg.outputs.s3-builds-dir }}
