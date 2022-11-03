@@ -24,7 +24,7 @@ jobs:
       s3-builds-dir: ${{ steps.builds.outputs.dir }}
       s3-builds-app-dir: ${{ steps.builds-app.outputs.dir }}
       s3-app-dir: ${{ steps.app.outputs.dir }}
-      s3-app-prefix: ${{ steps.app-prefix.dir }}
+      s3-app-prefix: ${{ steps.app-prefix.outputs.dir }}
     steps:
       - id: s3
         run: echo "dir=s3://${{ env.S3_BUCKET }}/${{ env.APP_NAME }}" >> $GITHUB_OUTPUT
