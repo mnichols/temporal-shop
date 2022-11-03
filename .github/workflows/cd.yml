@@ -6,6 +6,7 @@ on:
 #  pull_request:
 #      - main
 env:
+  APP_NAME: temporal-shop
   AWS_REGION: us-east-1
   AWS_ACCOUNT_ID: 429214323166
   CLUSTER_NAME: sa-prod
@@ -14,27 +15,27 @@ env:
   SLACK_CHANNEL: C038377FSCF #team-gtm
   GOPRIVATE: github.com/temporalio
   SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
-  S3_DIR: "s3://temporal-sa/temporal-shop"
+  S3_BUCKET: temporal-sa
 jobs:
   cfg:
     runs-on: temporal-shop #this should be in the CR created for the runner
     outputs:
       s3-dir: ${{ steps.s3.outputs.dir }}
-      builds-dir: ${{ steps.builds.outputs.dir }}
-      builds-bff-dir: ${{ steps.builds-bff.outputs.dir }}
-      builds-web-dir: ${{ steps.builds-web.outputs.dir }}
-      web-dir: ${{ steps.web.outputs.dir }}
+      s3-builds-dir: ${{ steps.builds.outputs.dir }}
+      s3-builds-app-dir: ${{ steps.builds-app.outputs.dir }}
+      s3-app-dir: ${{ steps.app.outputs.dir }}
+      s3-app-prefix: ${{ steps.app-prefix.dir }}
     steps:
       - id: s3
-        run: echo "dir=${{ env.S3_DIR }}" >> $GITHUB_OUTPUT
+        run: echo "dir=s://${{ env.S3_BUCKET }}/${{ env.APP_NAME }}" >> $GITHUB_OUTPUT
       - id: builds
         run: echo "dir=${{ steps.s3.outputs.dir }}/builds/${{ env.SHORT_SHA }}" >> $GITHUB_OUTPUT
-      - id: builds-bff
-        run: echo "dir=${{ steps.builds.outputs.dir }}/bff" >> $GITHUB_OUTPUT
-      - id: builds-web
-        run: echo "dir=${{ steps.builds.outputs.dir }}/web" >> $GITHUB_OUTPUT
-      - id: web
-        run: echo "dir=${{ steps.s3.outputs.dir }}/app" >> $GITHUB_OUTPUT
+      - id: app-prefix
+        run: echo "dir=${{ env.APP_NAME }}/app" >> $GITHUB_OUTPUT
+      - id: builds-app
+        run: echo "dir=${{ steps.builds.outputs.dir }}/app" >> $GITHUB_OUTPUT
+      - id: app
+        run: echo "dir=s://${{ env.S3_BUCKET }}/${{ steps.app-prefix.outputs.dir }}" >> $GITHUB_OUTPUT
   ui:
     needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
@@ -61,7 +62,7 @@ jobs:
       - name: build
         run: cd web/ui && npm run build
       - name: store ui artifact
-        run: aws s3 sync web/bff/generated ${{ needs.cfg.outputs.builds-web-dir }}
+        run: aws s3 sync web/bff/generated ${{ needs.cfg.outputs.s3-builds-app-dir }}
   bff:
     needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
@@ -100,11 +101,6 @@ jobs:
       - name: asdf
         id: asdf
         uses: mnichols/asdf-composite-action@v1
-      - name: fetch artifacts
-        run: |
-          rm -rf build
-          mkdir -p build
-          aws s3 sync ${{ needs.cfg.outputs.builds-dir }} build
       - name: login to amazon ecr
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -141,6 +137,12 @@ jobs:
           kustomize build kustomize/web/overlays/prod | kubectl apply -f -
       - name: deploy ui
         run: |
-          aws s3 sync build/web ${{ needs.cfg.outputs.web-dir }}
+          aws s3 sync ${{ needs.cfg.outputs.s3-builds-app-dir }} ${{ needs.cfg.outputs.s3-app-dir }}
+          $(aws s3api list-objects --bucket ${{ env.S3_BUCKET }} \
+            --prefix ${{ needs.cfg.output.app-prefix }} \
+            --query 'Contents[].[Key]' \
+            --output text | xargs -n 1 -P 10 \
+            aws s3api put-object-tagging --bucket ${{ env.S3_BUCKET }} \
+            --tagging 'TagSet=[{Key=security,Value=public}]' --key)
       - name: clean artifacts
-        run: aws s3 rm --recursive ${{ needs.cfg.outputs.builds-dir }}
+        run: aws s3 rm --recursive ${{ needs.cfg.outputs.s3-builds-dir }}

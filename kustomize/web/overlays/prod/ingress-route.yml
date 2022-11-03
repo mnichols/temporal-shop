@@ -46,7 +46,6 @@ spec:
     customRequestHeaders:
       Host: "temporal-sa.s3.amazonaws.com"
       X-Forwarded-Host: "temporal-sa.s3.amazonaws.com"
-      X-Script-Name: "11111"
     customResponseHeaders:
       X-Custom-Response-Header: "22222"
 ---
