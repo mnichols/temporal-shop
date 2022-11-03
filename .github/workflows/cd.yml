@@ -142,7 +142,7 @@ jobs:
       - name: tag ui
         run: |
           $(aws s3api list-objects --bucket ${{ env.S3_BUCKET }} \
-            --prefix ${{ needs.cfg.outputs.app-prefix }} \
+            --prefix ${{ needs.cfg.outputs.s3-app-prefix }} \
             --query 'Contents[].[Key]' \
             --output text | xargs -n 1 -P 10 \
             aws s3api put-object-tagging --bucket ${{ env.S3_BUCKET }} \
