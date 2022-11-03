@@ -27,7 +27,7 @@ jobs:
       s3-app-prefix: ${{ steps.app-prefix.dir }}
     steps:
       - id: s3
-        run: echo "dir=s://${{ env.S3_BUCKET }}/${{ env.APP_NAME }}" >> $GITHUB_OUTPUT
+        run: echo "dir=s3://${{ env.S3_BUCKET }}/${{ env.APP_NAME }}" >> $GITHUB_OUTPUT
       - id: builds
         run: echo "dir=${{ steps.s3.outputs.dir }}/builds/${{ env.SHORT_SHA }}" >> $GITHUB_OUTPUT
       - id: app-prefix
@@ -35,7 +35,7 @@ jobs:
       - id: builds-app
         run: echo "dir=${{ steps.builds.outputs.dir }}/app" >> $GITHUB_OUTPUT
       - id: app
-        run: echo "dir=s://${{ env.S3_BUCKET }}/${{ steps.app-prefix.outputs.dir }}" >> $GITHUB_OUTPUT
+        run: echo "dir=s3://${{ env.S3_BUCKET }}/${{ steps.app-prefix.outputs.dir }}" >> $GITHUB_OUTPUT
   ui:
     needs: [cfg]
     runs-on: temporal-shop #this should be in the CR created for the runner
