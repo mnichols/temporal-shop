@@ -135,6 +135,7 @@ jobs:
             kustomize edit set image amazonaws.com/web="$IMG")
 
           kustomize build kustomize/web/overlays/prod | kubectl apply -f -
+          
       - name: deploy ui
         run: |
           aws s3 sync ${{ needs.cfg.outputs.s3-builds-app-dir }} ${{ needs.cfg.outputs.s3-app-dir }}
