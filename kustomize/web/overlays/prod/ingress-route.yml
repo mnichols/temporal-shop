@@ -60,7 +60,7 @@ spec:
     # Match is the rule corresponding to an underlying router.
     # Later on, match could be the simple form of a path prefix, e.g. just "/bar",
     # but for now we only support a traefik style matching rule.
-    - match: Host(`sa.tmprl-test.cloud`) && PathPrefix(`/temporal-shop/app`)
+    - match: Host(`demo.tmprl-sa.cloud`) && PathPrefix(`/temporal-shop/app`)
       # kind could eventually be one of "Rule", "Path", "Host", "Method", "Header",
       # "Parameter", etc, to support simpler forms of rule matching, but for now we
       # only support "Rule".
@@ -87,7 +87,7 @@ spec:
     # Match is the rule corresponding to an underlying router.
     # Later on, match could be the simple form of a path prefix, e.g. just "/bar",
     # but for now we only support a traefik style matching rule.
-    - match: Host(`sa.tmprl-test.cloud`) && PathPrefix(`/temporal-shop`)
+    - match: Host(`demo.tmprl-sa.cloud`) && PathPrefix(`/temporal-shop`)
       # kind could eventually be one of "Rule", "Path", "Host", "Method", "Header",
       # "Parameter", etc, to support simpler forms of rule matching, but for now we
       # only support "Rule".
