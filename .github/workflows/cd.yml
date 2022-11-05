@@ -140,6 +140,7 @@ jobs:
 
       - name: deploy ui
         run: |
+          aws s3 rm --recursive ${{ needs.cfg.outputs.s3-app-dir }}
           aws s3 sync ${{ needs.cfg.outputs.s3-builds-app-dir }} ${{ needs.cfg.outputs.s3-app-dir }}
       - name: tag ui
         run: |
