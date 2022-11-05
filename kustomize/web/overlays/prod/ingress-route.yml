@@ -55,7 +55,7 @@ metadata:
   name: ingressroutetemporal-shop
 spec:
   entryPoints:
-    - https
+    - websecure
   tls:
     secretName: tls-cert-tmprl-sa-cloud-staging
   routes:
