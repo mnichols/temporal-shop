@@ -55,7 +55,9 @@ metadata:
   name: ingressroutetemporal-shop
 spec:
   entryPoints:
-    - web
+    - https
+  tls:
+    secretName: tls-cert-tmprl-sa-cloud-staging
   routes:
     # Match is the rule corresponding to an underlying router.
     # Later on, match could be the simple form of a path prefix, e.g. just "/bar",
@@ -77,15 +79,12 @@ spec:
       services:
         - name: ui
           namespace: temporal-shop
-          port: 80
+          port: 443
           passHostHeader: false
           responseForwarding:
             # (default 100ms) Interval between flushes of the buffered response body to the client.
             flushInterval: 100ms
           weight: 1
-      tls:
-        secretName: tls-cert-tmprl-sa-cloud-staging
-
     # Match is the rule corresponding to an underlying router.
     # Later on, match could be the simple form of a path prefix, e.g. just "/bar",
     # but for now we only support a traefik style matching rule.
@@ -111,5 +110,4 @@ spec:
             # (default 100ms) Interval between flushes of the buffered response body to the client.
             flushInterval: 100ms
           weight: 1
-      tls:
-        secretName: tls-cert-tmprl-sa-cloud-staging
+
