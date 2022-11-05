@@ -5,6 +5,7 @@ namespace: temporal-shop
 resources:
   - ingress-route.yml
   - service-ui.yml
+  - certificate-staging.yml
 commonLabels:
   env: prod
 configMapGenerator:

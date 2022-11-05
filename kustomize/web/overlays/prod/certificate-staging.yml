@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tmprl-sa-cloud
+  namespace: temporal-shop
+spec:
+  secretName: tls-cert-tmprl-sa-cloud-staging
+  privateKey:
+    rotationPolicy: Always
+  dnsNames:
+  - demo.tmprl-sa.cloud
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+    group: cert-manager.io
