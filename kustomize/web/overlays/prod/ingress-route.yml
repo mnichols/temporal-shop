@@ -57,7 +57,7 @@ spec:
   entryPoints:
     - websecure
   tls:
-    secretName: tls-cert-tmprl-sa-cloud-staging
+    secretName: tls-cert-tmprl-sa-cloud
   routes:
     # Match is the rule corresponding to an underlying router.
     # Later on, match could be the simple form of a path prefix, e.g. just "/bar",
@@ -79,7 +79,7 @@ spec:
       services:
         - name: ui
           namespace: temporal-shop
-          port: 443
+          port: 80
           passHostHeader: false
           responseForwarding:
             # (default 100ms) Interval between flushes of the buffered response body to the client.
