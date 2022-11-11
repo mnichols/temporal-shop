@@ -44,6 +44,14 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 	for _, o := range opts {
 		o(s)
 	}
+
+	if s.authenticator == nil {
+		var err error
+		s.authenticator, err = auth.NewAuthenticator(s.cfg.EncryptionKey, auth.NewTemporalSessionStore(s.temporal.Client))
+		if err != nil {
+			return nil, err
+		}
+	}
 	s.router.Use(middleware.Logger(s.logger))
 
 	logger := log.GetLogger(ctx)
@@ -51,6 +59,9 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 
 	s.router.Group(s.buildPublicRouter)
 	s.router.Group(s.buildSecureRouter)
+	if s.errors.ErrorOrNil() != nil {
+		return nil, s.errors.ErrorOrNil()
+	}
 
 	s.router.Get("/ping", pingHandler)
 	s.router.Get("/health", healthHandler)
@@ -91,15 +102,15 @@ func (s *Server) buildSecureRouter(r chi.Router) {
 	if s.authenticator == nil {
 		panic("an authenticator implementation is required for secure router")
 	}
-	r.Group(func(r chi.Router) {
-		r = r.With(middleware.Authenticate(s.authenticator))
-		apiHandlers, err := api.NewHandlers(api.WithEncryptionKey(s.cfg.EncryptionKey))
-		if err != nil {
-			s.appendError(err)
-			return
-		}
-		s.router.Get(routes.GETApi.Raw, apiHandlers.GET)
-	})
+
+	r.Use(middleware.Authenticate(s.authenticator))
+	apiHandlers, err := api.NewHandlers(api.WithEncryptionKey(s.cfg.EncryptionKey), api.WithTemporalClients(s.temporal))
+	if err != nil {
+		s.appendError(err)
+		return
+	}
+	r.Get(routes.GETApi.Raw, apiHandlers.GET)
+	
 }
 
 // Start starts the server
