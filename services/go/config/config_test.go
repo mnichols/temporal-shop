@@ -11,8 +11,9 @@ const defaultValue = "blink"
 
 type TestConfig struct {
 	UntaggedField             string
-	FieldWithDefaultValue     string `default:"blink"`
+	FieldWithDefaultValue     string `envconfig:"default=blink"`
 	FieldWithNameOtherThanEnv string `envconfig:"BONK_POO"`
+	DunderProp                string
 }
 
 func (c *TestConfig) Prefix() string {
@@ -26,6 +27,7 @@ func TestLoad(t *testing.T) {
 	A.Equal(os.Getenv("FOO_BAR"), "foobar")
 	A.Equal(os.Getenv("BAH_QUX"), "boom")
 }
+
 func TestUnmarshal(t *testing.T) {
 	A := assert.New(t)
 	os.Setenv("BONK_UNTAGGEDFIELD", "howdy")
@@ -51,6 +53,15 @@ func TestExplicitValue(t *testing.T) {
 	A.NoError(err)
 	A.Equal("tada", cfg.FieldWithNameOtherThanEnv)
 	os.Unsetenv("BONK_POO")
+}
+func TestDunderProps(t *testing.T) {
+	A := assert.New(t)
+	os.Setenv("BONK_DUNDER_PROP", "dunders")
+	cfg := TestConfig{}
+	_, err := UnmarshalConfig(&cfg)
+	A.NoError(err)
+	A.Equal("dunders", cfg.DunderProp)
+	os.Unsetenv("BONK_DUNDER_PROP")
 }
 func TestUnmarshalAllWithUnconstructedInnerConfigs(t *testing.T) {
 	type appCfg struct {

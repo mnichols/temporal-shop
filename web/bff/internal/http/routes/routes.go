@@ -19,6 +19,10 @@ var (
 			StatusCode: http.StatusMovedPermanently,
 		},
 	}
+	GETApi = Route{
+		Template: uritemplate.MustNew("/api"),
+		Raw:      "/api",
+	}
 )
 
 type Route struct {

@@ -43,6 +43,7 @@ func NewClients(ctx context.Context, opts ...Option) (*Clients, error) {
 		"cfg": result.Config,
 	})
 
+	var cert tls.Certificate
 	if result.ClientOptions.Logger == nil && result.logger != nil {
 		result.ClientOptions.Logger = logur.LoggerToKV(result.logger)
 	}
@@ -54,17 +55,27 @@ func NewClients(ctx context.Context, opts ...Option) (*Clients, error) {
 		result.ClientOptions.Namespace = result.Config.Namespace
 	}
 	if result.Config.CertFilePath != "" && result.Config.KeyFilePath != "" {
+		var err error
 		logger.Info("configuring tls", map[string]interface{}{
 			"certpath": result.Config.CertFilePath,
 			"keypath":  result.Config.KeyFilePath,
 		})
-		cert, err := tls.LoadX509KeyPair(result.Config.CertFilePath, result.Config.KeyFilePath)
+		cert, err = tls.LoadX509KeyPair(result.Config.CertFilePath, result.Config.KeyFilePath)
 		if err != nil {
-			panic(fmt.Errorf("failed to do TLS %w", err).Error())
+			return nil, fmt.Errorf("failed to load TLS from files: %w", err)
 		}
-		result.ClientOptions.ConnectionOptions.TLS = &tls.Config{Certificates: []tls.Certificate{cert}}
+	} else if result.Config.CloudCertPem != "" && result.Config.CloudCertKey != "" {
+		var err error
+		logger.Info("configuring tls using pem data")
+		cert, err = tls.X509KeyPair([]byte(result.Config.CloudCertPem), []byte(result.Config.CloudCertKey))
+		if err != nil {
+			return nil, fmt.Errorf("failed to load Cloud TLS from data: %w", err)
+		}
 	}
 
+	if len(cert.Certificate) > 0 {
+		result.ClientOptions.ConnectionOptions.TLS = &tls.Config{Certificates: []tls.Certificate{cert}}
+	}
 	// validate
 	if result.Config.HostPort == "" {
 		return nil, fmt.Errorf("temporal HostPort must be defined")

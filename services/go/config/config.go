@@ -7,10 +7,11 @@ import (
 	"reflect"
 
 	"github.com/joho/godotenv"
-	"github.com/kelseyhightower/envconfig"
+	//"github.com/kelseyhightower/envconfig"
+	"github.com/vrischmann/envconfig"
 )
 
-var configFile = ".env.local"
+var configFile = ".env"
 
 type prefixer interface {
 	Prefix() string
@@ -43,7 +44,12 @@ func UnmarshalConfig(obj prefixer) (prefixer, error) {
 	if obj == nil {
 		return nil, fmt.Errorf("prefixer cannot be nil")
 	}
-	if err := envconfig.Process(obj.Prefix(), obj); err != nil {
+	if err := envconfig.InitWithOptions(obj, envconfig.Options{
+		Prefix:          obj.Prefix(),
+		AllOptional:     true,
+		LeaveNil:        true,
+		AllowUnexported: false,
+	}); err != nil {
 		return nil, fmt.Errorf("failed to process %T from environment with prefix %s: %w", obj, obj.Prefix(), err)
 	}
 

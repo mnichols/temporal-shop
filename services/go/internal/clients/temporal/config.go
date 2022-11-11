@@ -5,6 +5,8 @@ type Config struct {
 	Namespace    string
 	CertFilePath string `split_words:"true"`
 	KeyFilePath  string `split_words:"true"`
+	CloudCertPem string
+	CloudCertKey string
 }
 
 func (c *Config) Prefix() string {

@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
+	"github.com/temporalio/temporal-shop/web/bff/internal/http/auth"
 	"logur.dev/logur"
 )
 
@@ -27,5 +28,10 @@ func WithConfig(cfg *Config) Option {
 func WithLogger(l logur.Logger) Option {
 	return func(s *Server) {
 		s.logger = l
+	}
+}
+func WithAuthenticator(a *auth.Authenticator) Option {
+	return func(s *Server) {
+		s.authenticator = a
 	}
 }
