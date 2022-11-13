@@ -47,7 +47,7 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 
 	if s.authenticator == nil {
 		var err error
-		s.authenticator, err = auth.NewAuthenticator(s.cfg.EncryptionKey, auth.NewTemporalSessionStore(s.temporal.Client))
+		s.authenticator, err = auth.NewAuthenticator(s.cfg.EncryptionKey, auth.NewTemporalSessionStore(nil))
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +110,7 @@ func (s *Server) buildSecureRouter(r chi.Router) {
 		return
 	}
 	r.Get(routes.GETApi.Raw, apiHandlers.GET)
-	
+
 }
 
 // Start starts the server
