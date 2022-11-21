@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/go-multierror"
+	"github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 
 	"os"
 	"sync"
 
-	"github.com/temporalio/temporal-shop/services/go/internal/clients/temporal"
-	"github.com/temporalio/temporal-shop/services/go/internal/instrumentation/log"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 
 	"logur.dev/logur"
 )

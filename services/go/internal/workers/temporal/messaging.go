@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/temporalio/temporal-shop/services/go/internal/admin"
-	temporalClient "github.com/temporalio/temporal-shop/services/go/internal/clients/temporal"
 	"github.com/temporalio/temporal-shop/services/go/internal/instrumentation/log"
 	"github.com/temporalio/temporal-shop/services/go/internal/workflows"
+	temporalClient "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 
 	"logur.dev/logur"
 

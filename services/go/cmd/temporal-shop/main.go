@@ -2,18 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/temporalio/temporal-shop/services/go/internal/clients/http"
+	"github.com/temporalio/temporal-shop/services/go/pkg/clients/http"
+	temporal2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/temporalio/temporal-shop/services/go/config"
 	"github.com/temporalio/temporal-shop/services/go/internal/clients"
-	temporalClient "github.com/temporalio/temporal-shop/services/go/internal/clients/temporal"
-	"github.com/temporalio/temporal-shop/services/go/internal/instrumentation/log"
 	"github.com/temporalio/temporal-shop/services/go/internal/workers/temporal"
+	"github.com/temporalio/temporal-shop/services/go/pkg/config"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"golang.org/x/sync/errgroup"
 	"logur.dev/logur"
 )
@@ -25,7 +25,7 @@ type startable interface {
 
 type appConfig struct {
 	Log            *log.Config
-	TemporalClient *temporalClient.Config
+	TemporalClient *temporal2.Config
 	TemporalWorker *temporal.Config
 
 	HTTPConfig *http.Config
@@ -56,9 +56,9 @@ func main() {
 
 	// clients
 	clients := clients.MustGetClients(ctx,
-		clients.WithTemporal(temporalClient.NewClients(ctx,
-			temporalClient.WithConfig(appCfg.TemporalClient),
-			temporalClient.WithLogger(logger))),
+		clients.WithTemporal(temporal2.NewClients(ctx,
+			temporal2.WithConfig(appCfg.TemporalClient),
+			temporal2.WithLogger(logger))),
 	)
 
 	defer func() {

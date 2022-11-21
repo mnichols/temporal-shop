@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/temporalio/temporal-shop/services/go/pkg/config"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/web/bff/build"
-	"github.com/temporalio/temporal-shop/web/bff/config"
 	"github.com/temporalio/temporal-shop/web/bff/internal/clients"
 	temporalClient "github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
 	httpServer "github.com/temporalio/temporal-shop/web/bff/internal/http/server"
-	"github.com/temporalio/temporal-shop/web/bff/internal/instrumentation/log"
 	"os"
 	"os/signal"
 	"syscall"

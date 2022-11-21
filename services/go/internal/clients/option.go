@@ -2,7 +2,7 @@ package clients
 
 import (
 	"github.com/hashicorp/go-multierror"
-	"github.com/temporalio/temporal-shop/services/go/internal/clients/temporal"
+	"github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 	"logur.dev/logur"
 )
 
