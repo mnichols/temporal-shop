@@ -21,6 +21,9 @@ bff: out
 
 bins: bff
 
+genapi:
+	@cd proto; buf generate
+
 test:
 	go test -race -timeout=5m -cover -count=1  ./...
 
