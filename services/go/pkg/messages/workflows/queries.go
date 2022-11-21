@@ -1,8 +1,8 @@
 package workflows
 
-const QueryOrder = "query_order"
+const QueryShopper = "query_shopper"
 
-type QueryOrderResult struct {
-	PaymentIntentID string
-	OrderID         string
+type QueryShopperResult struct {
+	ShopperID string
+	Email     string
 }

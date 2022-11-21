@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package temporal_shop.test.v1;
+option go_package = "github.com/temporalio/temporal-shop/api/test/v1;test";
+
+message SignalRequest {
+  string name = 1;
+}
+
+message QueryRequest {
+  string name = 1;
+}

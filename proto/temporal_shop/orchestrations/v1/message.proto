@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package temporal_shop.orchestrations.v1;
+option go_package = "github.com/temporalio/temporal-shop/api/orchestrations/v1;orchestrations";
+
+message PingRequest {
+  string name = 1;
+}
+
+message PingResponse {
+  string name = 1;
+}

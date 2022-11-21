@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package temporal_shop.commands.v1;
+option go_package = "github.com/temporalio/temporal-shop/api/commands/v1;commands";
+
+import "google/protobuf/timestamp.proto";
+
+message RefreshShopperRequest {
+  google.protobuf.Timestamp last_seen_at = 1;
+  string email = 2;
+}

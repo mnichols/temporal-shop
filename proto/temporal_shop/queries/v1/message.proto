@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package temporal_shop.queries.v1;
+option go_package = "github.com/temporalio/temporal-shop/api/queries/v1;queries";
+
+message GetShopperResponse {
+  string shopper_id = 1;
+  string email = 2;
+}
