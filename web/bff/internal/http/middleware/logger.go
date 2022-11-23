@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/middleware"
-	"github.com/temporalio/temporal-shop/web/bff/internal/instrumentation/log"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"logur.dev/logur"
 )
 

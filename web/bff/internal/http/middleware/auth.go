@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"context"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/auth"
-	"github.com/temporalio/temporal-shop/web/bff/internal/instrumentation/log"
 	"net/http"
 )
 

@@ -10,9 +10,9 @@ import (
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/app"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/auth"
 
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/middleware"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/routes"
-	"github.com/temporalio/temporal-shop/web/bff/internal/instrumentation/log"
 	"logur.dev/logur"
 	"net/http"
 	"net/http/httputil"
