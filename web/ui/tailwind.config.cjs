@@ -1,4 +1,4 @@
-const defaultTheme = require('tailwindcss/defaultTheme');
+const defaultTheme = require('tailwindcss/defaultTheme')
 
 const temporalColors = {
   primary: { DEFAULT: '#18181b' }, // gray-900
@@ -132,7 +132,7 @@ const temporalColors = {
     800: '#6b21a8',
     900: '#581c87',
   },
-};
+}
 
 const config = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
@@ -151,7 +151,6 @@ const config = {
     },
   },
   plugins: [],
-};
+}
 
-module.exports = config;
-
+module.exports = config
