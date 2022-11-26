@@ -42,6 +42,7 @@
   "type": "module",
   "dependencies": {
     "prettier-plugin-tailwindcss": "^0.1.13",
+    "type-fest": "^3.2.0",
     "uri-template": "^2.0.0"
   }
 }

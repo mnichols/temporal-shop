@@ -1,41 +1,89 @@
+import type { MockResponse } from "./testhelper";
 import { describe, expect, it, vi } from 'vitest'
-import { apiFetch } from './api-fetch'
+import { apiFetch, parse, csrfCookie, csrfHeader } from './api-fetch'
+import { withCookie, createFetchMock } from "./testhelper";
 import apiRootResponse from '$fixtures/api-root.json'
-
-type MockResponse<T = unknown> = {
-  body: Promise<T>
-  ok: boolean
-  status: number
-  statusText: string
-}
-
-const createFetchMock = (res: MockResponse) => {
-    return vi.fn(async () => {
-        return Promise.resolve({
-            json: () => Promise.resolve(res.body),
-            ...res,
-        })
-    }) as unknown as typeof fetch
-}
 
 describe('apiFetch', () => {
     const url = '/api'
+    const tpl = 'https://demo.tmprl-sa.cloud/myapp/api{?options*}'
+    const defaultOpts = {
+        'credentials': 'include',
+        'headers': {},
+    }
     it('should fetch the url', async () => {
-        let options = {}
         const request = createFetchMock({
             body: apiRootResponse,
             ok: true,
             status: 200,
             statusText: 'ok',
         })
-        await apiFetch(url, { request })
-        expect(request).toHaveBeenCalledWith(url, options)
+        await apiFetch({url}, { request })
+        expect(request).toHaveBeenCalledWith(url, defaultOpts)
     })
-    it('should return data', async () => {
-
+    it('should expand uri templates', async () => {
+        let params = {
+            options: {
+                opt1: 'foo',
+                opt2: 'bar'
+            }
+        }
+        const request = createFetchMock({
+            body: apiRootResponse,
+            ok: true,
+            status: 200,
+            statusText: 'ok',
+        })
+        await apiFetch({url: tpl, params}, { request })
+        expect(request).toHaveBeenCalledWith('https://demo.tmprl-sa.cloud/myapp/api?opt1=foo&opt2=bar', defaultOpts)
+    })
+    it('should accept parsed templates', async () => {
+        let params = {
+            options: {
+                opt1: 'foo',
+                opt2: 'bar'
+            }
+        }
+        const request = createFetchMock({
+            body: apiRootResponse,
+            ok: true,
+            status: 200,
+            statusText: 'ok',
+        })
+        await apiFetch({tpl: parse(tpl), params}, { request })
+        expect(request).toHaveBeenCalledWith('https://demo.tmprl-sa.cloud/myapp/api?opt1=foo&opt2=bar', defaultOpts)
+    })
+    it('should support csrf', async () => {
+        let token = 'token'
+        let params = {
+            options: {
+                opt1: 'foo',
+                opt2: 'bar'
+            }
+        }
+        const request = createFetchMock({
+            body: apiRootResponse,
+            ok: true,
+            status: 200,
+            statusText: 'ok',
+        })
+        await withCookie(`${csrfCookie}=${token}`,  async () => {
+            await apiFetch({tpl: parse(tpl), params}, { request })
+        })
+        let csrfOpts: any = { headers: {} }
+        csrfOpts.headers[`${csrfHeader.toLowerCase()}`] = token
+        expect(request).toHaveBeenCalledWith('https://demo.tmprl-sa.cloud/myapp/api?opt1=foo&opt2=bar', {  ...defaultOpts, ...csrfOpts})
     })
     it('should return response', async () => {
-
+        const request = createFetchMock({
+            body: apiRootResponse,
+            ok: true,
+            status: 200,
+            statusText: 'ok',
+        })
+        let actual = await apiFetch({url}, { request })
+        expect(await actual.response.json()).toEqual(apiRootResponse)
+        expect(actual.response.status).toEqual(200)
     })
 })
 // import { URLSearchParams } from 'url'
