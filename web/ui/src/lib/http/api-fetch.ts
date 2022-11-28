@@ -57,7 +57,7 @@ export const apiFetch = async <T>(
     } = opts
     let requestOpts = { }
     requestOpts = withSecurityOptions(requestOpts, browser)
-    let res = await request(actualURL, requestOpts)
+    let res = await request(actualURL, requestOpts)np
     return {
         response: res,
     }

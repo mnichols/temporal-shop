@@ -1,3 +1,5 @@
+import { vi } from "vitest"
+
 export type MockResponse<T = unknown> = {
   body: Promise<T>
   ok: boolean

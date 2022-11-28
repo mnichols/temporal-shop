@@ -74,6 +74,19 @@ describe('apiFetch', () => {
         csrfOpts.headers[`${csrfHeader.toLowerCase()}`] = token
         expect(request).toHaveBeenCalledWith('https://demo.tmprl-sa.cloud/myapp/api?opt1=foo&opt2=bar', {  ...defaultOpts, ...csrfOpts})
     })
+    it('should handle errors', async () => {
+        let errd: Response
+        const request = createFetchMock({
+            body: apiRootResponse,
+            ok: true,
+            status: 200,
+            statusText: 'ok',
+            onError: (e: Response) => {
+                errd = e
+            }
+        })
+        await apiFetch({tpl: parse(tpl), params}, { request })
+    })
     it('should return response', async () => {
         const request = createFetchMock({
             body: apiRootResponse,
