@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/temporalio/temporal-shop/services/go/internal/instrumentation/log"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	sdkclient "go.temporal.io/sdk/client"
 	"logur.dev/logur"
 )

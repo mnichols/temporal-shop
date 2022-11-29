@@ -9,14 +9,14 @@ import (
 	"io"
 )
 
-func mdHash(input string) string {
+func MDHash(input string) string {
 	byteInput := []byte(input)
 	md5Hash := md5.Sum(byteInput)
 	return hex.EncodeToString(md5Hash[:]) // by referring to it as a string
 }
 func Encrypt(key string, value []byte) ([]byte, error) {
 
-	aesBlock, err := aes.NewCipher([]byte(mdHash(key)))
+	aesBlock, err := aes.NewCipher([]byte(MDHash(key)))
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func Encrypt(key string, value []byte) ([]byte, error) {
 }
 
 func Decrypt(key string, value []byte) ([]byte, error) {
-	hashedPhrase := mdHash(key)
+	hashedPhrase := MDHash(key)
 	aesBlock, err := aes.NewCipher([]byte(hashedPhrase))
 	if err != nil {
 		return nil, err

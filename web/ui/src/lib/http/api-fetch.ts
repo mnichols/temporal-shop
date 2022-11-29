@@ -57,12 +57,12 @@ export const apiFetch = async <T>(
     } = opts
     let requestOpts = { }
     requestOpts = withSecurityOptions(requestOpts, browser)
-    let res = await request(actualURL, requestOpts)np
+    let res = await request(actualURL, requestOpts)
     return {
         response: res,
     }
 }
-const withSecurityOptions = (
+export const withSecurityOptions = (
     options: RequestInit,
     isBrowser: browser,
 ): RequestInit => {
@@ -71,7 +71,7 @@ const withSecurityOptions = (
     return opts
 }
 
-const withCsrf = (headers: HeadersInit, isBrowser: boolean = browser): HeadersInit => {
+export const withCsrf = (headers: HeadersInit, isBrowser: boolean = browser): HeadersInit => {
     if (!isBrowser) {
 
         return headers || {}
@@ -88,11 +88,8 @@ const withCsrf = (headers: HeadersInit, isBrowser: boolean = browser): HeadersIn
         if(!token) {
             return {}
         }
-        if (token) {
-            token = token.trim().slice(csrfCookie.length + 1)
-            h.set(csrfHeader, token)
-        }
-
+        token = token.trim().slice(csrfCookie.length + 1)
+        h.set(csrfHeader, token)
     } catch (err) {
         console.error(err)
     }

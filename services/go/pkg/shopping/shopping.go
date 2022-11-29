@@ -5,6 +5,8 @@ import (
 	"github.com/temporalio/temporal-shop/services/go/internal/encrypt"
 )
 
+var MDHash = encrypt.MDHash
+
 func GenerateShopperHash(key, email string) (string, error) {
 	value, err := encrypt.Encrypt(key, []byte(email))
 	if err != nil {
