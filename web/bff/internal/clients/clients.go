@@ -7,8 +7,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
-	"github.com/temporalio/temporal-shop/web/bff/internal/instrumentation/log"
 
 	"logur.dev/logur"
 )

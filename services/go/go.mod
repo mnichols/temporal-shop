@@ -9,13 +9,14 @@ require (
 	github.com/google/go-cmp v0.5.6
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/joho/godotenv v1.4.0
-	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/stretchr/testify v1.8.1
 	github.com/stripe/stripe-go/v72 v72.122.0
+	github.com/vrischmann/envconfig v1.3.0
 	go.temporal.io/api v1.11.1-0.20220907050538-6de5285cf463
 	go.temporal.io/sdk v1.17.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/sync v0.1.0
+	google.golang.org/protobuf v1.28.1
 	logur.dev/adapter/zap v0.5.0
 	logur.dev/logur v0.17.0
 )
@@ -50,6 +51,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20220902135211-223410557253 // indirect
 	google.golang.org/grpc v1.49.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

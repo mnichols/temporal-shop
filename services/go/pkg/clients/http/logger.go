@@ -3,7 +3,7 @@ package http
 import (
 	"context"
 	"github.com/gojek/heimdall/v7"
-	"github.com/temporalio/temporal-shop/services/go/internal/instrumentation/log"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"net/http/httputil"
 	"time"
 

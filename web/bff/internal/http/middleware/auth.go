@@ -20,9 +20,9 @@ func Authenticate(authenticator *auth.Authenticator) func(next http.Handler) htt
 
 			ctx := r.Context()
 			logger := log.GetLogger(ctx)
-			logger.Info("entered authenticate")
 			authentication, err := authenticator.AuthenticateRequest(r)
 			if err != nil {
+				logger.Debug("authentication failed", log.Fields{log.TagError: err})
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}

@@ -2,9 +2,9 @@ package app
 
 import (
 	"fmt"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/routes"
-	"github.com/temporalio/temporal-shop/web/bff/internal/instrumentation/log"
 	"net/http"
 	"os"
 	"path/filepath"

@@ -1,7 +1,7 @@
 go 1.19
 
 use (
-./web
-./services/go
-./api
-		)
+	./api
+	./services/go
+	./web
+)
