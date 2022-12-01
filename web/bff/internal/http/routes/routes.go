@@ -23,6 +23,10 @@ var (
 		Template: uritemplate.MustNew("/api"),
 		Raw:      "/api",
 	}
+	POSTLogin = Route{
+		Template: uritemplate.MustNew("/login"),
+		Raw:      "/login",
+	}
 )
 
 type Route struct {

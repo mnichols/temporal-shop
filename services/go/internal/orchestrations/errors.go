@@ -1,4 +1,4 @@
-package workflows
+package orchestrations
 
 import (
 	serr "github.com/bdandy/go-errors"

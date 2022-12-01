@@ -1,4 +1,4 @@
-package workflows
+package orchestrations
 
 import (
 	"fmt"
@@ -10,12 +10,13 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-var TypeWorkflows *Workflows
+var TypeOrchestrations *Orchestrations
+var TaskQueueDefault = "default"
 var adminHandlers *admin.Handlers
 
-type Workflows struct{}
+type Orchestrations struct{}
 
-func (w *Workflows) Ping(ctx workflow.Context, params *orchestrations.PingRequest) (*orchestrations.PingResponse, error) {
+func (w *Orchestrations) Ping(ctx workflow.Context, params *orchestrations.PingRequest) (*orchestrations.PingResponse, error) {
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,

@@ -1,6 +1,9 @@
 package encrypt
 
-import "testing"
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
 
 func TestEncryptAndDecrypt(t *testing.T) {
 	key := "foo123"
@@ -20,4 +23,16 @@ func TestEncryptAndDecrypt(t *testing.T) {
 	if string(decrypted) != email {
 		t.Errorf("expected '%s' but got '%s'", email, decrypted)
 	}
+}
+func TestEncryptReuse(t *testing.T) {
+	A := assert.New(t)
+	key := "foo123"
+	email := "mike@example.com"
+
+	expect, err := Encrypt(key, []byte(email))
+	A.NoError(err)
+
+	actual, err := Encrypt(key, []byte(email))
+	A.NoError(err)
+	A.Equal(expect, actual)
 }

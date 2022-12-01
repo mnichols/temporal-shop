@@ -9,6 +9,7 @@ import (
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/api"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/app"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/auth"
+	"github.com/temporalio/temporal-shop/web/bff/internal/http/login"
 
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/middleware"
@@ -47,7 +48,7 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 
 	if s.authenticator == nil {
 		var err error
-		s.authenticator, err = auth.NewAuthenticator(s.cfg.EncryptionKey, auth.NewTemporalSessionStore(nil))
+		s.authenticator, err = auth.NewAuthenticator(s.cfg.EncryptionKey, auth.NewTemporalSessionStore(s.temporal.Client))
 		if err != nil {
 			return nil, err
 		}
@@ -96,6 +97,12 @@ func (s *Server) buildPublicRouter(r chi.Router) {
 
 		appHandlers.Register(r)
 	}
+	loginHandlers, err := login.NewHandlers(login.WithSessionStore(s.authenticator), login.WithTemporalClients(s.temporal))
+	if err != nil {
+		s.appendError(err)
+		return
+	}
+	r.Post(routes.POSTLogin.Raw, loginHandlers.POST)
 
 }
 func (s *Server) buildSecureRouter(r chi.Router) {

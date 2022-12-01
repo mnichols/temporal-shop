@@ -9,6 +9,8 @@ import (
 	"github.com/temporalio/temporal-shop/services/go/pkg/shopping"
 	"go.temporal.io/api/serviceerror"
 	"go.temporal.io/api/workflowservice/v1"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/mocks"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -41,6 +43,13 @@ func (m mockTemporal) SignalWorkflow(ctx context.Context, wid, rid, signalName s
 		return args.Error(0)
 	}
 	return nil
+}
+func (m mockTemporal) ExecuteWorkflow(ctx context.Context, options client.StartWorkflowOptions, workflow interface{}, p ...interface{}) (client.WorkflowRun, error) {
+	args := m.Called(ctx, options, workflow, p)
+	if args.Get(1) != nil {
+		return nil, args.Error(1)
+	}
+	return &mocks.WorkflowRun{}, nil
 }
 
 func Test_Temporal_AuthenticateRequest(t *testing.T) {
@@ -105,7 +114,8 @@ func Test_Temporal_AuthenticateRequest(t *testing.T) {
 	for _, testCase := range cases {
 		t.Run(testCase.desc, func(t *testing.T) {
 			A := assert.New(t)
-			s := &mockTemporal{}
+			//s := &mockTemporal{}
+			s := &mocks.Client{}
 			session := NewTemporalSessionStore(s)
 			r := httptest.NewRequest(http.MethodGet, testCase.path, nil)
 			if testCase.sessionToken != nil {

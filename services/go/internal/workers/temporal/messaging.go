@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/temporalio/temporal-shop/services/go/internal/admin"
-	"github.com/temporalio/temporal-shop/services/go/internal/workflows"
+	"github.com/temporalio/temporal-shop/services/go/internal/orchestrations"
 	temporalClient "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 
@@ -43,7 +43,7 @@ func (w *Worker) Shutdown(_ context.Context) {
 	// TODO
 }
 func (w *Worker) register(inner worker.Worker) error {
-	wfs := &workflows.Workflows{}
+	wfs := &orchestrations.Orchestrations{}
 	admin := &admin.Handlers{}
 	//repurchasing := &repurchasing2.Handlers{}
 	inner.RegisterActivity(admin)

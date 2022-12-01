@@ -1,3 +1,9 @@
+# Temporal Shop
+
+This repo uses go workspaces.
+But there are issues with `go mod tidy` in underlying go modules:
+https://github.com/golang/go/issues/50750
+
 ### Deployment
 
 **UI**

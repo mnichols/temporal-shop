@@ -10,3 +10,8 @@ message PingRequest {
 message PingResponse {
   string name = 1;
 }
+
+message StartSessionRequest {
+  string id = 1;
+  string email = 2;
+}

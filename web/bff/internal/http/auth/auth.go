@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/services/go/pkg/shopping"
 	"net/http"
@@ -21,6 +22,7 @@ type Claims struct {
 }
 type SessionStore interface {
 	Validate(ctx context.Context, value string) error
+	Start(ctx context.Context, params *orchestrations.StartSessionRequest) error
 }
 type Authentication struct {
 	Email string
@@ -51,7 +53,19 @@ func (a *Authenticator) AuthenticateRequest(r *http.Request) (*Authentication, e
 	}
 	return &Authentication{Email: email}, nil
 }
-
+func (a *Authenticator) StartSession(ctx context.Context, email string) error {
+	id, err := shopping.GenerateShopperHash(a.encryptionKey, email)
+	if err != nil {
+		return err
+	}
+	return a.sessionStore.Start(ctx, &orchestrations.StartSessionRequest{
+		Id:    id,
+		Email: email,
+	})
+}
+func (a *Authenticator) GenerateToken(ctx context.Context, email string) (string, error) {
+	return generateJWTString(a.encryptionKey, email)
+}
 func ExtractEmailFromRequest(key string) func(r *http.Request) (string, error) {
 	return func(r *http.Request) (string, error) {
 		if authorization := r.Header.Get(headerAuthorization); authorization != "" {
