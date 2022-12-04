@@ -1,10 +1,11 @@
-<script>
+<script lang="ts">
     import { PUBLIC_GRAPHQL_URL} from "$env/static/public";
     import { queryStore, gql, getContextClient } from '@urql/svelte';
+    import { onMount} from "svelte";
 
-    const todos = queryStore({
-        client: getContextClient(),
-        query: gql`
+        const todos = queryStore({
+            client: getContextClient(),
+            query: gql`
       query {
         todos {
           id
@@ -12,7 +13,8 @@
         }
       }
     `,
-    });
+        })
+
 </script>
 <h1>Temporal Shop</h1>
 

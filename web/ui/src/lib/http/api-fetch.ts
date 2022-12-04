@@ -62,6 +62,7 @@ export const apiFetch = async <T>(
         response: res,
     }
 }
+
 export const withSecurityOptions = (
     options: RequestInit,
     isBrowser: browser,
