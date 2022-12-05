@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/hashicorp/go-multierror"
 	temporalClient "github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
+	"github.com/temporalio/temporal-shop/web/bff/internal/gql"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/api"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/app"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/auth"
@@ -116,8 +117,13 @@ func (s *Server) buildSecureRouter(r chi.Router) {
 		s.appendError(err)
 		return
 	}
+	gqlHandlers, err := gql.NewHandlers()
+	if err != nil {
+		s.appendError(err)
+		return
+	}
 	r.Get(routes.GETApi.Raw, apiHandlers.GET)
-
+	r.Handle("/api/gql", gqlHandlers)
 }
 
 // Start starts the server

@@ -4,6 +4,7 @@ import type {Exchange} from "urql";
 const localStorageToken = 'token'
 const refreshStorageToken = 'refreshToken'
 import { browser } from '$app/environment';
+import {goto} from "../svelte-mocks/app/navigation";
 
 
 export const createAuthExchange = (): Exchange => {
@@ -21,7 +22,7 @@ const getAuth = async ({ authState }) => {
         }
         return null
     }
-
+    console.log('getAuth logout')
     logout()
     return null
 }
@@ -50,12 +51,11 @@ const addAuthToOperation = ({ authState, operation }) => {
 const didAuthError = ({ error }) => {
     return error.graphQLErrors.some(e => e.extensions?.code === 'FORBIDDEN') ||
         error.graphQLErrors.some(e => e.extensions?.code === 'UNAUTHORIZED') ||
-        error.graphQLErrors.some(
-            e => e.response.status === 401,
-        )
+        (error.response && error.response.status === 401)
 }
 const logout = () => {
     if (browser) {
         localStorage.removeItem(localStorageToken)
     }
+    goto('/login').then(r => console.log('hi'))
 }
