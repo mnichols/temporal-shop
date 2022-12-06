@@ -16,10 +16,11 @@ const config = {
       pages: '../bff/generated',
       assets: '../bff/generated',
     }),
+    paths: {
+      base: '/app'
+    },
   },
-  paths: {
-    base: '/app'
-  }
+
 }
 
 export default config

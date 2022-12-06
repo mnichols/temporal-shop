@@ -1,5 +1,6 @@
 import { configDefaults, defineConfig } from 'vitest/config'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+// @ts-ignore
 import path from 'path'
 
 export default defineConfig({

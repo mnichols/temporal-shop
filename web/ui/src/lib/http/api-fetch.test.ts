@@ -1,9 +1,21 @@
 import type { MockResponse } from "./testhelper";
 import { describe, expect, it, vi } from 'vitest'
-import { apiFetch, parse, csrfCookie, csrfHeader } from './api-fetch'
+import {apiFetch, parse, csrfCookie, csrfHeader, withSecurityOptions} from './api-fetch'
 import { withCookie, createFetchMock } from "./testhelper";
 import apiRootResponse from '$fixtures/api-root.json'
 
+describe('withSecurityOptions', () => {
+    it('should preserve passed in headers', async () => {
+        let headers = { 'x-foo': 'bar'}
+        const actual = withSecurityOptions({ headers }, true)
+
+        let h = new Headers(actual.headers)
+        let ct = h.get('content-type')
+
+        expect(h.has('x-foo')).toBeTruthy()
+        expect(ct).toEqual('bar')
+    })
+})
 describe('apiFetch', () => {
     const url = '/api'
     const tpl = 'https://demo.tmprl-sa.cloud/myapp/api{?options*}'
@@ -99,6 +111,9 @@ describe('apiFetch', () => {
         expect(actual.response.status).toEqual(200)
     })
 })
+
+
+/* OLD */
 // import { URLSearchParams } from 'url'
 // import { describe, expect, it, vi } from 'vitest'
 // import { apiFetch } from './api-fetch'

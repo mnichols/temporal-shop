@@ -78,15 +78,16 @@ export const login = async (params: LoginRequest): Promise<void> => {
         console.error('only works in browser')
         return
     }
-    let res = await apiFetch({ url: '/api/login' }, {
+    let res = await apiFetch({ url: '/login' }, {
         method: 'POST',
-        body: params,
+        body: JSON.stringify(params),
     })
     if (res.response.status === 200) {
         let result : LoginResponse = await res.response.json()
         window.localStorage.setItem(localStorageToken, result.token)
-        console.log('result', result)
+        return window.location.assign('/app')
     } else {
-        console.error('failed to login', res.response.text())
+        console.error('failed to login', await res.response.text())
     }
+
 }

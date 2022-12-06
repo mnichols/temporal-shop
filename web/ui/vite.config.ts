@@ -10,9 +10,12 @@ const config: UserConfig = {
       $lib: path.resolve(__dirname, './src/lib'),
       $types: path.resolve(__dirname, './src/types'),
       $components: path.resolve(__dirname, './src/lib/components/'),
-      $app: path.resolve(__dirname, './src/lib/svelte-mocks/app/'),
+      //$app: path.resolve(__dirname, './src/lib/svelte-mocks/app/'),
       $fixtures: path.resolve(__dirname, './src/fixtures/'),
     },
+  },
+  build: {
+    sourcemap: true
   }
 }
 

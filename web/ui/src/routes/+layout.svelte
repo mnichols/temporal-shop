@@ -1,11 +1,12 @@
-<script context="module" lang="ts">
+<!--<script context="module" lang="ts">-->
 
-</script>
+<!--</script>-->
 <script>
     import '../app.css'
     import { setContextClient } from '@urql/svelte'
     import { createGraphQLClient } from "$lib/http/index.js";
-
+    import { base } from '$app/paths'
+    console.log('using base', base)
     let client = createGraphQLClient()
     setContextClient(client)
 

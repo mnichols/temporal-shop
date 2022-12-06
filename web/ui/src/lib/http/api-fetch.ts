@@ -2,9 +2,12 @@ import { browser } from '$app/environment'
 import { noop } from 'svelte/internal'
 import type { RequireAtLeastOne} from "type-fest"
 import parser from 'uri-template'
+
+const HEADER_CONTENT_TYPE='content-type'
 export { parse } from 'uri-template'
 export const csrfCookie = '_csrf'
 export const csrfHeader = 'X-CSRF-TOKEN'
+
 interface Expandable {
     expand(values: Record<string, unknown>): string
 }
@@ -30,9 +33,9 @@ export type APIErrorResponse = {
 export type ErrorCallback = (error: APIErrorResponse) => void
 
 type RequestOpts = {
-    body?: {}
+    body?: BodyInit
     method?: string
-    headers?: HeadersInit
+    headers?: Headers
     request?: typeof fetch
     onError?: ErrorCallback,
     isBrowser?: boolean,
@@ -52,12 +55,24 @@ export const apiFetch = async <T>(
         actualURL = url.tpl.expand(url.params || {})
     }
     const {
-        body = {},
         request = fetch,
         onError = noop(),
         isBrowser = browser,
+        //headers,
+        method = 'GET',
+        body,
     } = opts
-    let requestOpts = { }
+    let headers = new Headers(opts.headers || {})
+
+    if (!headers.has(HEADER_CONTENT_TYPE)) {
+        headers.set(HEADER_CONTENT_TYPE, 'application/json')
+    }
+  let requestOpts: RequestInit = {
+        body,
+        method,
+        headers,
+    }
+
     requestOpts = withSecurityOptions(requestOpts, browser)
     let res = await request(actualURL, requestOpts)
     return {
@@ -66,30 +81,28 @@ export const apiFetch = async <T>(
 }
 
 export const withSecurityOptions = (
-    options: RequestInit,
+    options: RequestInit = {},
     isBrowser: browser,
 ): RequestInit => {
-    const opts: RequestInit = { credentials: 'include', ...options }
-    opts.headers = withCsrf(options?.headers, isBrowser)
-    return opts
+    options['credentials'] = 'include'
+    options.headers = withCsrf(options?.headers || {}, isBrowser)
+    return options
 }
 
 export const withCsrf = (headers: HeadersInit, isBrowser: boolean = browser): HeadersInit => {
     if (!isBrowser) {
-
         return headers || {}
     }
-
-    let h = new Headers(headers)
+    const h = new Headers(headers)
     if(h.has(csrfHeader)) {
-        return {}
+        return h
     }
 
     try {
         const cookies = document.cookie.split(';')
         let token = cookies.find((c) => c.includes(csrfCookie))
         if(!token) {
-            return {}
+            return h
         }
         token = token.trim().slice(csrfCookie.length + 1)
         h.set(csrfHeader, token)
@@ -97,9 +110,5 @@ export const withCsrf = (headers: HeadersInit, isBrowser: boolean = browser): He
         console.error(err)
     }
 
-    let out: HeadersInit = {}
-    for(const he of h.entries()) {
-        out[he[0]] = he[1]
-    }
-    return out
+    return h
 }
