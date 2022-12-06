@@ -1,18 +1,9 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
+    import { login } from '$lib/auth'
     let password: string;
     let email: string;
     let message: string;
-    async function login() {
-        try {
-            const user: UserCredentials = await auth.signIn({ email, password });
-            if (user) {
-                goto("/");
-            }
-        } catch(error) {
-            message = error;
-        }
-    }
+
 </script>
 
 <h1>Login</h1>
@@ -31,10 +22,5 @@
 </div>
 
 <style lang="postcss">
-    p {
-        background: turquoise;
-    }
-    p {
-        color: white;
-    }
+
 </style>

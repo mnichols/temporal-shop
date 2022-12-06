@@ -1,2 +1,2 @@
-export { withCsrf, withSecurityOptions } from './api-fetch'
+export { withCsrf, withSecurityOptions, apiFetch } from './api-fetch'
 export { createGraphQLClient } from './urql'

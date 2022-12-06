@@ -2,6 +2,8 @@
     import { PUBLIC_GRAPHQL_URL} from "$env/static/public";
     import { queryStore, gql, getContextClient } from '@urql/svelte';
     import { onMount} from "svelte";
+    import {base} from "$app/paths";
+    console.log('base', base)
 
         const todos = queryStore({
             client: getContextClient(),
@@ -24,4 +26,5 @@
 <ul>
     <li><a href="/foo">foo</a></li>
     <li><a href="/foo/deep-foo">deep foo</a></li>
+    <li><a href="{base}/login">login</a></li>
 </ul>

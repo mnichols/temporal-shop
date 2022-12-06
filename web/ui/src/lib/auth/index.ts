@@ -5,7 +5,7 @@ const localStorageToken = 'token'
 const refreshStorageToken = 'refreshToken'
 import { browser } from '$app/environment';
 import {goto} from "../svelte-mocks/app/navigation";
-
+import {apiFetch} from "../http";
 
 export const createAuthExchange = (): Exchange => {
     return authExchange({
@@ -14,17 +14,19 @@ export const createAuthExchange = (): Exchange => {
         didAuthError,
     })
 }
+const isLogin = () => {
+    return browser && window.location.pathname.includes('login')
+}
 const getAuth = async ({ authState }) => {
+
     if (!authState && browser) {
         const token = window.localStorage.getItem(localStorageToken)
         if (token ) {
             return { token, }
         }
-        return null
     }
-    console.log('getAuth logout')
-    logout()
-    return null
+    let result = await logout()
+    return result
 }
 const addAuthToOperation = ({ authState, operation }) => {
     if (!authState || !authState.token) {
@@ -53,9 +55,38 @@ const didAuthError = ({ error }) => {
         error.graphQLErrors.some(e => e.extensions?.code === 'UNAUTHORIZED') ||
         (error.response && error.response.status === 401)
 }
-const logout = () => {
+const logout = async () => {
     if (browser) {
         localStorage.removeItem(localStorageToken)
+        if(!isLogin()) {
+            window.location.assign('/app/login')
+        }
     }
-    goto('/login').then(r => console.log('hi'))
+    return null
+}
+
+interface LoginRequest {
+    email: string
+    password: string
+}
+interface LoginResponse {
+    email: string
+    token: string
+}
+export const login = async (params: LoginRequest): Promise<void> => {
+    if(!browser) {
+        console.error('only works in browser')
+        return
+    }
+    let res = await apiFetch({ url: '/api/login' }, {
+        method: 'POST',
+        body: params,
+    })
+    if (res.response.status === 200) {
+        let result : LoginResponse = await res.response.json()
+        window.localStorage.setItem(localStorageToken, result.token)
+        console.log('result', result)
+    } else {
+        console.error('failed to login', res.response.text())
+    }
 }

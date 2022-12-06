@@ -8,12 +8,18 @@ const config = {
     dir: process.cwd(),
     publicPrefix: 'PUBLIC_'
   },
+  // prerender: {
+  //   enabled: false,
+  // },
   kit: {
     adapter: adapter({
       pages: '../bff/generated',
       assets: '../bff/generated',
     }),
   },
+  paths: {
+    base: '/app'
+  }
 }
 
 export default config

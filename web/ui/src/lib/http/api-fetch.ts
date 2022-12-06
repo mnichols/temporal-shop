@@ -31,6 +31,8 @@ export type ErrorCallback = (error: APIErrorResponse) => void
 
 type RequestOpts = {
     body?: {}
+    method?: string
+    headers?: HeadersInit
     request?: typeof fetch
     onError?: ErrorCallback,
     isBrowser?: boolean,
