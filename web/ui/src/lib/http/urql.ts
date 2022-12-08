@@ -9,7 +9,11 @@ const authExchange = createAuthExchange()
 export const createGraphQLClient = (): Client => {
     return createClient({
         url: PUBLIC_GRAPHQL_URL,
-        fetchOptions: withSecurityOptions({}, browser),
+        fetchOptions: (): RequestInit => {
+            let i = withSecurityOptions({}, browser)
+            i.headers = Object.entries(new Headers(i.headers).entries())
+            return i
+        },
         exchanges: [
             dedupExchange,
             cacheExchange,

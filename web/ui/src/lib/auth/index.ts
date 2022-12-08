@@ -4,8 +4,9 @@ import type {Exchange} from "urql";
 const localStorageToken = 'token'
 const refreshStorageToken = 'refreshToken'
 import { browser } from '$app/environment';
-import {goto} from "../svelte-mocks/app/navigation";
 import {apiFetch} from "../http";
+import { goto } from '$app/navigation'
+import { base } from '$app/paths'
 
 export const createAuthExchange = (): Exchange => {
     return authExchange({
@@ -59,7 +60,7 @@ const logout = async () => {
     if (browser) {
         localStorage.removeItem(localStorageToken)
         if(!isLogin()) {
-            window.location.assign('/app/login')
+            goto(`${base}/login`)
         }
     }
     return null
@@ -85,7 +86,8 @@ export const login = async (params: LoginRequest): Promise<void> => {
     if (res.response.status === 200) {
         let result : LoginResponse = await res.response.json()
         window.localStorage.setItem(localStorageToken, result.token)
-        return window.location.assign('/app')
+        return goto('/')
+       // return window.location.assign('/app')
     } else {
         console.error('failed to login', await res.response.text())
     }

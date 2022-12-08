@@ -12,6 +12,7 @@ import (
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/auth"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/login"
 
+	"github.com/go-chi/cors"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/middleware"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/routes"
@@ -54,8 +55,21 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 			return nil, err
 		}
 	}
+	// all routes use this middleware
 	s.router.Use(middleware.Logger(s.logger))
-
+	// Basic CORS
+	// for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing
+	s.router.Use(cors.Handler(cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"http://*", "https://*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		Debug:            true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 	logger := log.GetLogger(ctx)
 	logger.Info("registering routers")
 

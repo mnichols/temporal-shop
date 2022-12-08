@@ -74,6 +74,8 @@ export const apiFetch = async <T>(
     }
 
     requestOpts = withSecurityOptions(requestOpts, browser)
+    requestOpts.headers = Object.fromEntries(new Headers(requestOpts.headers).entries())
+    console.log('requestOpts', requestOpts.headers)
     let res = await request(actualURL, requestOpts)
     return {
         response: res,

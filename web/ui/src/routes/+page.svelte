@@ -4,7 +4,6 @@
     import { onMount} from "svelte";
     import {base} from "$app/paths";
     import Link from "$components/link/Link.svelte";
-    console.log('base', base)
 
         const todos = queryStore({
             client: getContextClient(),
