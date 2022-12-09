@@ -5,7 +5,7 @@ const localStorageToken = 'token'
 const refreshStorageToken = 'refreshToken'
 import { browser } from '$app/environment';
 import {apiFetch} from "../http";
-import { goto } from '$app/navigation'
+import { go } from '$lib/nav'
 import { base } from '$app/paths'
 
 export const createAuthExchange = (): Exchange => {
@@ -30,6 +30,7 @@ const getAuth = async ({ authState }) => {
     return result
 }
 const addAuthToOperation = ({ authState, operation }) => {
+    console.log('addAuthToOperation', authState, operation)
     if (!authState || !authState.token) {
         return operation
     }
@@ -60,7 +61,7 @@ const logout = async () => {
     if (browser) {
         localStorage.removeItem(localStorageToken)
         if(!isLogin()) {
-            goto(`${base}/login`)
+            return await go(`/login`)
         }
     }
     return null
@@ -79,15 +80,14 @@ export const login = async (params: LoginRequest): Promise<void> => {
         console.error('only works in browser')
         return
     }
-    let res = await apiFetch({ url: '/login' }, {
+    let res = await apiFetch({ url: '{scheme}{host}/login' }, {
         method: 'POST',
         body: JSON.stringify(params),
     })
     if (res.response.status === 200) {
         let result : LoginResponse = await res.response.json()
         window.localStorage.setItem(localStorageToken, result.token)
-        return goto('/')
-       // return window.location.assign('/app')
+        return go('/')
     } else {
         console.error('failed to login', await res.response.text())
     }

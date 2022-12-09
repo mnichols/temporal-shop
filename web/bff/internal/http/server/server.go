@@ -74,7 +74,7 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 	logger.Info("registering routers")
 
 	s.router.Group(s.buildPublicRouter)
-	s.router.Group(s.buildSecureRouter)
+	s.router.Mount(routes.GETApi.Raw, s.buildApiRouter(s.router))
 	if s.errors.ErrorOrNil() != nil {
 		return nil, s.errors.ErrorOrNil()
 	}
@@ -112,32 +112,40 @@ func (s *Server) buildPublicRouter(r chi.Router) {
 
 		appHandlers.Register(r)
 	}
-	loginHandlers, err := login.NewHandlers(login.WithSessionStore(s.authenticator), login.WithTemporalClients(s.temporal))
-	if err != nil {
-		s.appendError(err)
-		return
-	}
-	r.Post(routes.POSTLogin.Raw, loginHandlers.POST)
 
 }
-func (s *Server) buildSecureRouter(r chi.Router) {
+func (s *Server) buildApiRouter(r chi.Router) chi.Router {
 	if s.authenticator == nil {
 		panic("an authenticator implementation is required for secure router")
 	}
 
-	r.Use(middleware.Authenticate(s.authenticator))
+	loginHandlers, err := login.NewHandlers(login.WithSessionStore(s.authenticator), login.WithTemporalClients(s.temporal))
+	if err != nil {
+		s.appendError(err)
+		return nil
+	}
 	apiHandlers, err := api.NewHandlers(api.WithEncryptionKey(s.cfg.EncryptionKey), api.WithTemporalClients(s.temporal))
 	if err != nil {
 		s.appendError(err)
-		return
+		return nil
 	}
 	gqlHandlers, err := gql.NewHandlers()
 	if err != nil {
 		s.appendError(err)
-		return
+		return nil
 	}
-	r.Get(routes.GETApi.Raw, apiHandlers.GET)
-	r.Handle("/api/gql", gqlHandlers)
+
+	// public api
+	r = r.Group(func(r chi.Router) {
+		r.Post(routes.POSTLogin.Raw, loginHandlers.POST)
+	})
+	// secure api
+	r = r.Group(func(r chi.Router) {
+		r.Use(middleware.Authenticate(s.authenticator))
+		r.Get(routes.GETApi.Raw, apiHandlers.GET)
+		r.Handle("/gql", gqlHandlers)
+	})
+	return r
 }
 
 // Start starts the server

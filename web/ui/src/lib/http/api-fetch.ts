@@ -1,12 +1,15 @@
 import { browser } from '$app/environment'
 import { noop } from 'svelte/internal'
 import type { RequireAtLeastOne} from "type-fest"
-import parser from 'uri-template'
+import { parse } from 'uri-template'
 
-const HEADER_CONTENT_TYPE='content-type'
-export { parse } from 'uri-template'
+import { PUBLIC_API_ROOT_HOST, PUBLIC_API_ROOT_SCHEME } from '$env/static/public'
+
+export { parse }
 export const csrfCookie = '_csrf'
 export const csrfHeader = 'X-CSRF-TOKEN'
+
+const HEADER_CONTENT_TYPE='content-type'
 
 interface Expandable {
     expand(values: Record<string, unknown>): string
@@ -48,11 +51,16 @@ export const apiFetch = async <T>(
     opts: RequestOpts
 ): Promise<APIResponse> => {
     let actualURL = ''
+    let defaultParams = {
+        scheme: PUBLIC_API_ROOT_SCHEME,
+        host: PUBLIC_API_ROOT_HOST,
+    }
+    url.params = { ...defaultParams, ...url.params || {} }
     if(url.url) {
-        let tmp = parser.parse(url.url)
-        actualURL = tmp.expand(url.params || {})
+        let tmp = parse(url.url)
+        actualURL = decodeURIComponent(tmp.expand(url.params || {}))
     } else if (url.tpl) {
-        actualURL = url.tpl.expand(url.params || {})
+        actualURL = decodeURIComponent(url.tpl.expand(url.params || {}))
     }
     const {
         request = fetch,
@@ -75,7 +83,6 @@ export const apiFetch = async <T>(
 
     requestOpts = withSecurityOptions(requestOpts, browser)
     requestOpts.headers = Object.fromEntries(new Headers(requestOpts.headers).entries())
-    console.log('requestOpts', requestOpts.headers)
     let res = await request(actualURL, requestOpts)
     return {
         response: res,
