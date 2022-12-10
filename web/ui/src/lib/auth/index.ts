@@ -30,7 +30,6 @@ const getAuth = async ({ authState }) => {
     return result
 }
 const addAuthToOperation = ({ authState, operation }) => {
-    console.log('addAuthToOperation', authState, operation)
     if (!authState || !authState.token) {
         return operation
     }
@@ -80,6 +79,7 @@ export const login = async (params: LoginRequest): Promise<void> => {
         console.error('only works in browser')
         return
     }
+    // TODO get this url from server
     let res = await apiFetch({ url: '{scheme}{host}/login' }, {
         method: 'POST',
         body: JSON.stringify(params),
