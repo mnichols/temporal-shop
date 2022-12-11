@@ -1,13 +1,25 @@
 syntax = "proto3";
 
 package inventory.v1;
-option go_package = "github.com/temporalio/temporal-shop/api/inventory/v1;commands";
-
-import "google/protobuf/timestamp.proto";
+option go_package = "github.com/temporalio/temporal-shop/api/inventory/v1;inventory";
 
 message PingRequest {
   string name = 1;
 }
 message PingResponse {
   string name = 1;
+}
+
+message Game {
+  string id = 1;
+  string product = 2;
+  string category = 3;
+  string image_url = 4;
+  string price = 5;
+}
+message GetGamesRequest {
+  string version = 1;
+}
+message GetGamesResponse {
+  repeated Game games = 1;
 }

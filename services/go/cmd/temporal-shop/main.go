@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/temporalio/temporal-shop/services/go/internal/grpc"
+	"github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/pkg/clients/http"
 	temporal2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
-
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,8 +29,8 @@ type appConfig struct {
 	Log            *log.Config
 	TemporalClient *temporal2.Config
 	TemporalWorker *temporal.Config
-
-	HTTPConfig *http.Config
+	HTTPConfig     *http.Config
+	GRPCConfig     *grpc.Config
 }
 
 func main() {
@@ -73,9 +75,14 @@ func main() {
 		temporal.WithTemporal(clients.Temporal()),
 	)
 	if err != nil {
-		panic("failed to create temporal worker")
+		panic(fmt.Errorf("failed to create temporal worker: %v", err))
 	}
-	startables := []startable{wk}
+
+	grpcServer, err := createGRPCServices(ctx, appCfg.GRPCConfig)
+	if err != nil {
+		panic(fmt.Errorf("failed to create grpc services: %v", err))
+	}
+	startables := []startable{wk, grpcServer}
 
 	for _, s := range startables {
 		var current = s
@@ -115,4 +122,17 @@ func main() {
 		panic("shutdown was not clean" + err.Error())
 	}
 	logger.Info("goodbye")
+}
+func createGRPCServices(ctx context.Context, cfg *grpc.Config) (startable, error) {
+	inv, err := inventory.NewInventoryService()
+	if err != nil {
+		return nil, err
+	}
+
+	srv, err := grpc.NewDefaultGRPCServer(
+		ctx,
+		grpc.WithConfig(cfg),
+		grpc.WithServices(inv),
+	)
+	return srv, err
 }

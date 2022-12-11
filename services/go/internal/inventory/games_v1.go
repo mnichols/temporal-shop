@@ -3,214 +3,214 @@ package inventory
 const gamesV1JSON = `
 [
   {
-    "id": 1,
+    "id": "1",
     "product": "Cyberpunk 2077",
     "category": "xbox",
     "image": "https://imgur.com/3CF1UhY.png",
-    "price": 36.49
+    "price": "36.49"
   },
   {
-    "id": 2,
+    "id": "2",
     "product": "Grand Theft Auto 5",
     "category": "xbox",
     "image": "https://imgur.com/BqNWnDB.png",
-    "price": 21.99
+    "price": "21.99"
   },
   {
-    "id": 3,
+    "id": "3",
     "product": "Minecraft",
     "category": "xbox",
     "image": "https://imgur.com/LXnUnd2.png",
-    "price": 49.99
+    "price": "49.99"
   },
   {
-    "id": 4,
+    "id": "4",
     "product": "PUBG",
     "category": "xbox",
     "image": "https://imgur.com/Ondg3Jn.png",
-    "price": 5.09
+    "price": "5.09"
   },
   {
-    "id": 5,
+    "id": "5",
     "product": "FIFA 21",
     "category": "xbox",
     "image": "https://imgur.com/AzT9YMP.png",
-    "price": 17.49
+    "price": "17.49"
   },
   {
-    "id": 6,
+    "id": "6",
     "product": "Battlefield 5",
     "category": "xbox",
     "image": "https://imgur.com/X3MQNVs.png",
-    "price": 29.35
+    "price": "29.35"
   },
   {
-    "id": 7,
+    "id": "7",
     "product": "Watch Dogs 2",
     "category": "xbox",
     "image": "https://imgur.com/v3lqCEb.png",
-    "price": 18.99
+    "price": "18.99"
   },
   {
-    "id": 8,
+    "id": "8",
     "product": "Fortnite",
     "category": "ps5",
     "image": "https://imgur.com/3lTxDpl.png",
-    "price": 29.99
+    "price": "29.99"
   },
   {
-    "id": 9,
+    "id": "9",
     "product": "Call of Duty: Black Ops",
     "category": "ps5",
     "image": "https://imgur.com/4GvUw3G.png",
-    "price": 69.99
+    "price": "69.99"
   },
   {
-    "id": 10,
+    "id": "10",
     "product": "NBA2K21 Next Generation",
     "category": "ps5",
     "image": "https://imgur.com/Mxjvkws.png",
-    "price": 69.99
+    "price": "69.99"
   },
   {
-    "id": 11,
+    "id": "11",
     "product": "Spider-Man Miles Morales",
     "category": "ps5",
     "image": "https://imgur.com/guV5cUF.png",
-    "price": 29.99
+    "price": "29.99"
   },
   {
-    "id": 12,
+    "id": "12",
     "product": "Resident Evil Village",
     "category": "ps5",
     "image": "https://imgur.com/1CxJz8E.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 13,
+    "id": "13",
     "product": "Assassin's Creed Valhalla",
     "category": "ps5",
     "image": "https://imgur.com/xJD093X.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 14,
+    "id": "14",
     "product": "Animal Crossing",
     "category": "switch",
     "image": "https://imgur.com/1SVaEBk.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 15,
+    "id": "15",
     "product": "The Legend of Zelda",
     "category": "switch",
     "image": "https://imgur.com/IX5eunc.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 16,
+    "id": "16",
     "product": "Stardew Valley",
     "category": "switch",
     "image": "https://imgur.com/aL3nj5t.png",
-    "price": 14.99
+    "price": "14.99"
   },
   {
-    "id": 17,
+    "id": "17",
     "product": "Mario Golf Super Rush",
     "category": "switch",
     "image": "https://imgur.com/CPxlyEg.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 18,
+    "id": "18",
     "product": "Super Smash Bros",
     "category": "switch",
     "image": "https://imgur.com/ZuLatzs.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 19,
+    "id": "19",
     "product": "Grand Theft Auto 5",
     "category": "pc",
     "image": "https://imgur.com/9LRil4N.png",
-    "price": 29.99
+    "price": "29.99"
   },
   {
-    "id": 20,
+    "id": "20",
     "product": "Battlefield V",
     "category": "pc",
     "image": "https://imgur.com/T3v629h.png",
-    "price": 39.99
+    "price": "39.99"
   },
   {
-    "id": 21,
+    "id": "21",
     "product": "Red Dead Redemption 2",
     "category": "pc",
     "image": "https://imgur.com/aLObdQK.png",
-    "price": 39.99
+    "price": "39.99"
   },
   {
-    "id": 22,
+    "id": "22",
     "product": "Flight Simulator 2020",
     "category": "pc",
     "image": "https://imgur.com/2IeocI8.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 23,
+    "id": "23",
     "product": "Forza Horizon 4",
     "category": "pc",
     "image": "https://imgur.com/gLQsp6N.png",
-    "price": 59.99
+    "price": "59.99"
   },
   {
-    "id": 24,
+    "id": "24",
     "product": "Minecraft",
     "category": "pc",
     "image": "https://imgur.com/qm1gaGD.png",
-    "price": 29.99
+    "price": "29.99"
   },
   {
-    "id": 25,
+    "id": "25",
     "product": "Rainbow Six Seige",
     "category": "pc",
     "image": "https://imgur.com/JIgzykM.png",
-    "price": 7.99
+    "price": "7.99"
   },
   {
-    "id": 26,
+    "id": "26",
     "product": "Xbox Controller",
     "category": "accessories",
     "image": "https://imgur.com/a964vBm.png",
-    "price": 59.0
+    "price": "59.99"
   },
   {
-    "id": 27,
+    "id": "27",
     "product": "Xbox Controller",
     "category": "accessories",
     "image": "https://imgur.com/ntrEPb1.png",
-    "price": 69.0
+    "price": "69.99"
   },
   {
-    "id": 28,
+    "id": "28",
     "product": "Gaming Keyboard",
     "category": "accessories",
     "image": "https://imgur.com/VMe3WBk.png",
-    "price": 49.99
+    "price": "49.99"
   },
   {
-    "id": 29,
+    "id": "29",
     "product": "Gaming Mouse",
     "category": "accessories",
     "image": "https://imgur.com/wvpHOCm.png",
-    "price": 29.99
+    "price": "29.99"
   },
   {
-    "id": 30,
+    "id": "30",
     "product": "Switch Joy-Con",
     "category": "accessories",
     "image": "https://imgur.com/faQ0IXH.png",
-    "price": 13.99
+    "price": "13.99"
   }
 ]
 `
