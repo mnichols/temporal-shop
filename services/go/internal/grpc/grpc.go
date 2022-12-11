@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"net"
 )
 
@@ -43,6 +44,7 @@ func (s *DefaultGRPCServer) Start(ctx context.Context) error {
 		log.GetLogger(ctx),
 		log.Fields{"addr": s.listener.Addr()},
 	)
+	reflection.Register(s.server)
 	logger.Info("starting grpc server")
 	return s.server.Serve(s.listener)
 }
