@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/go-multierror"
+	inventory2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/inventory"
 	"github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 
 	"os"
@@ -23,18 +24,30 @@ type Clients struct {
 	logger       logur.Logger
 	clientErrors *multierror.Error
 	temporal     *temporal.Clients
+	inventory    *inventory2.Client
 }
 
 func (c *Clients) Temporal() *temporal.Clients {
 	return c.temporal
 }
+func (c *Clients) Inventory() *inventory2.Client {
+	return c.inventory
+}
 
 func (c *Clients) Close() error {
+	var errs *multierror.Error
 	if c.temporal != nil {
-		return c.temporal.Close()
+		if err := c.temporal.Close(); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 	}
 
-	return nil
+	if c.inventory != nil {
+		if err := c.inventory.Close(); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+	}
+	return errs.ErrorOrNil()
 }
 
 // NewClients creates Clients dependencies

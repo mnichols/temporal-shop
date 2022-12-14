@@ -1,11 +1,15 @@
-package temporal
+package temporal_shop
 
 import (
 	"context"
 	"fmt"
+	"github.com/temporalio/temporal-shop/api/inventory/v1"
 	"github.com/temporalio/temporal-shop/services/go/internal/admin"
+	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/internal/orchestrations"
+	invClient "github.com/temporalio/temporal-shop/services/go/pkg/clients/inventory"
 	temporalClient "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
+
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 
 	"logur.dev/logur"
@@ -23,12 +27,19 @@ func WithTemporal(c *temporalClient.Clients) Option {
 		w.temporalClients = c
 	}
 }
+func WithInventoryClient(c *invClient.Client) Option {
+	return func(w *Worker) {
+		w.inventoryClient = c
+	}
+}
 
 type Config struct{}
 
 type Worker struct {
 	temporalClients *temporalClient.Clients
 	inner           worker.Worker
+	inventoryClient inventory.InventoryServiceClient
+
 	// other clients
 }
 
@@ -45,13 +56,12 @@ func (w *Worker) Shutdown(_ context.Context) {
 func (w *Worker) register(inner worker.Worker) error {
 	wfs := &orchestrations.Orchestrations{}
 	admin := &admin.Handlers{}
-	//repurchasing := &repurchasing2.Handlers{}
+	inventory := inventory2.NewHandlers(w.inventoryClient)
+	inner.RegisterActivity(inventory)
 	inner.RegisterActivity(admin)
-	//inner.RegisterActivity(repurchasing)
-
 	inner.RegisterWorkflow(wfs.Ping)
-	//inner.RegisterWorkflow(wfs.EnrollRepurchasingCustomer)
-	//inner.RegisterWorkflow(wfs.RemindRepurchasingCustomer)
+	inner.RegisterWorkflow(wfs.Shopper)
+	inner.RegisterWorkflow(wfs.CreateInventory)
 	return nil
 }
 func (w *Worker) Start(ctx context.Context) error {

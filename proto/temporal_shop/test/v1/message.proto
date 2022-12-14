@@ -10,3 +10,7 @@ message SignalRequest {
 message QueryRequest {
   string name = 1;
 }
+
+message TestSessionID {
+  string email = 1;
+}

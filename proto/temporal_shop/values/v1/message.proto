@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package temporal_shop.values.v1;
+option go_package = "github.com/temporalio/temporal-shop/api/temporal_shop/values/v1;values";
+
+message SessionID {
+  string email = 1;
+}

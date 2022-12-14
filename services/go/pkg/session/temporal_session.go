@@ -1,4 +1,4 @@
-package auth
+package session
 
 import (
 	"context"
@@ -10,20 +10,16 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type Sessioner interface {
-	SignalWorkflow(ctx context.Context, workflowID string, runID string, signalName string, arg interface{}) error
-	ExecuteWorkflow(ctx context.Context, options client.StartWorkflowOptions, workflow interface{}, args ...interface{}) (client.WorkflowRun, error)
-}
 type TemporalSessionStore struct {
 	temporalClient Sessioner
 }
 
-func (t *TemporalSessionStore) Validate(ctx context.Context, value string) error {
+func (t *TemporalSessionStore) Validate(ctx context.Context, id string) error {
 	refresh := &commands.RefreshShopperRequest{
 		LastSeenAt: timestamppb.Now(),
-		Email:      value,
+		Email:      id,
 	}
-	err := t.temporalClient.SignalWorkflow(ctx, value, "", orchestrations.SignalName(refresh), refresh)
+	err := t.temporalClient.SignalWorkflow(ctx, id, "", orchestrations.SignalName(refresh), refresh)
 	if err != nil {
 		return err
 	}
@@ -33,7 +29,7 @@ func (t *TemporalSessionStore) Start(ctx context.Context, params *orchestrations
 	logger := log.GetLogger(ctx)
 	opts := client.StartWorkflowOptions{
 		ID:        params.Id,
-		TaskQueue: orchestrations.TaskQueueDefault,
+		TaskQueue: orchestrations.TaskQueueTemporalShop,
 	}
 	run, err := t.temporalClient.ExecuteWorkflow(ctx, opts, orchestrations.TypeOrchestrations.Shopper, params)
 	if err != nil {

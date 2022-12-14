@@ -5,12 +5,29 @@ import (
 	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
+	"github.com/google/tink/go/daead/subtle"
+	"hash"
 	"io"
 )
 
+// AssociatedData
+// TODO load this from k8s
+var AssociatedData = []byte("sa_temporal-shop")
+
+// SHA256 hashes using sha256 algorithm
+func SHA256(text string) string {
+	algorithm := sha256.New()
+	return stringHasher(algorithm, text)
+}
+func stringHasher(algorithm hash.Hash, text string) string {
+	algorithm.Write([]byte(text))
+	return hex.EncodeToString(algorithm.Sum(nil))
+}
 func MDHash(input string) string {
 	byteInput := []byte(input)
+
 	md5Hash := md5.Sum(byteInput)
 	return hex.EncodeToString(md5Hash[:]) // by referring to it as a string
 }
@@ -59,4 +76,28 @@ func Decrypt(key string, value []byte) ([]byte, error) {
 	}
 
 	return out, nil
+}
+
+func EncryptDeterministically(key []byte, value []byte, associatedData []byte) (string, error) {
+	hashedKey := SHA256(string(key))
+	sut, err := subtle.NewAESSIV([]byte(hashedKey))
+	if err != nil {
+		return "", err
+	}
+	actual, err := sut.EncryptDeterministically(value, associatedData)
+	if err != nil {
+		return "", err
+	}
+	encoded := hex.EncodeToString(actual)
+	return encoded, nil
+}
+func DecryptDeterministically(key []byte, value []byte, associatedData []byte) ([]byte, error) {
+	hashedKey := SHA256(string(key))
+	sut, err := subtle.NewAESSIV([]byte(hashedKey))
+	if err != nil {
+		return nil, err
+	}
+	actual, err := sut.DecryptDeterministically(value, associatedData)
+	return actual, err
+
 }

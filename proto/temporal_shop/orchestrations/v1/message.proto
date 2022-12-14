@@ -14,4 +14,10 @@ message PingResponse {
 message StartSessionRequest {
   string id = 1;
   string email = 2;
+  int64 durationSeconds = 3;
+}
+
+message CreateInventoryRequest {
+  string id = 1;
+  string email = 2;
 }

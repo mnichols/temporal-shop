@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/hashicorp/go-multierror"
+	"github.com/temporalio/temporal-shop/services/go/pkg/session"
 	temporalClient "github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
 	"github.com/temporalio/temporal-shop/web/bff/internal/gql"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/api"
@@ -50,7 +51,7 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 
 	if s.authenticator == nil {
 		var err error
-		s.authenticator, err = auth.NewAuthenticator(s.cfg.EncryptionKey, auth.NewTemporalSessionStore(s.temporal.Client))
+		s.authenticator, err = auth.NewAuthenticator(s.cfg.EncryptionKey, nil, session.NewTemporalSessionStore(s.temporal.Client))
 		if err != nil {
 			return nil, err
 		}

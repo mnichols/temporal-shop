@@ -3,10 +3,14 @@ package inventory
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/temporalio/temporal-shop/api/inventory/v1"
 	"google.golang.org/grpc"
 )
 
+func InventorySessionID(sessionID string) string {
+	return fmt.Sprint("%s_inv", sessionID)
+}
 func NewInventoryService() (*InventoryService, error) {
 	return &InventoryService{}, nil
 }

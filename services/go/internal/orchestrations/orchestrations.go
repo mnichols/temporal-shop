@@ -2,6 +2,7 @@ package orchestrations
 
 import (
 	"fmt"
+	"google.golang.org/protobuf/proto"
 	"time"
 
 	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
@@ -11,10 +12,23 @@ import (
 )
 
 var TypeOrchestrations *Orchestrations
-var TaskQueueDefault = "default"
 var adminHandlers *admin.Handlers
 
-type Orchestrations struct{}
+func SignalName(m proto.Message) string {
+	if m == nil {
+		return ""
+	}
+	return string(m.ProtoReflect().Descriptor().FullName())
+}
+func QueryName(m proto.Message) string {
+	if m == nil {
+		return ""
+	}
+	return string(m.ProtoReflect().Descriptor().FullName())
+}
+
+type Orchestrations struct {
+}
 
 func (w *Orchestrations) Ping(ctx workflow.Context, params *orchestrations.PingRequest) (*orchestrations.PingResponse, error) {
 

@@ -6,6 +6,7 @@ import (
 	"github.com/temporalio/temporal-shop/services/go/internal/grpc"
 	"github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/pkg/clients/http"
+	inventory2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/inventory"
 	temporal2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 	"os"
 	"os/signal"
@@ -28,7 +29,7 @@ type startable interface {
 type appConfig struct {
 	Log            *log.Config
 	TemporalClient *temporal2.Config
-	TemporalWorker *temporal.Config
+	TemporalWorker *temporal_shop.Config
 	HTTPConfig     *http.Config
 	GRPCConfig     *grpc.Config
 }
@@ -55,12 +56,18 @@ func main() {
 		panic("failed to create logger" + err.Error())
 	}
 	ctx = log.WithLogger(ctx, logger)
+	// apps
+	clientConn, err := grpc.NewClientConnection(ctx, appCfg.GRPCConfig)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create grpc client conn %s", err.Error()))
+	}
 
 	// clients
 	clients := clients.MustGetClients(ctx,
 		clients.WithTemporal(temporal2.NewClients(ctx,
 			temporal2.WithConfig(appCfg.TemporalClient),
 			temporal2.WithLogger(logger))),
+		clients.WithInventory(inventory2.NewClient(ctx, clientConn)),
 	)
 
 	defer func() {
@@ -68,11 +75,11 @@ func main() {
 			logger.Error("failed to close clients gracefully", logur.Fields{"err": perr})
 		}
 	}()
-	// apps
 
-	wk, err := temporal.NewWorker(
+	wk, err := temporal_shop.NewWorker(
 		ctx,
-		temporal.WithTemporal(clients.Temporal()),
+		temporal_shop.WithTemporal(clients.Temporal()),
+		temporal_shop.WithInventoryClient(clients.Inventory()),
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to create temporal worker: %v", err))
