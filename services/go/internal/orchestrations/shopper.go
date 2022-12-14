@@ -70,19 +70,36 @@ func (w *Orchestrations) Shopper(ctx workflow.Context, params *orchestrations2.S
 	})
 	logger := log.With(workflow.GetLogger(ctx), "email", params.Email)
 	logger.Info("started shopper")
+
 	state := &queries.GetShopperResponse{ShopperId: params.Id, Email: params.Email, InventoryId: fmt.Sprintf("inv_%s", params.Id)}
-	if err := workflow.SetQueryHandler(ctx, QueryName(&queries.GetShopperRequest{}), func(req *queries.GetShopperRequest) (*queries.GetShopperResponse, error) {
-		return state, nil
-	}); err != nil {
-		return fmt.Errorf("failed to setup shopper query %w", err)
+
+	if err := setupQueries(ctx, state); err != nil {
+		return err
 	}
+
+	cancelInventory := prepareInventory(ctx, params, state, logger)
+
+	if err := keepShopping(ctx, params, logger); err != nil {
+		return err
+	}
+
+	cancelInventory()
+	logger.Info("session timed out and inventory canceled")
+	return nil
+}
+
+func prepareInventory(ctx workflow.Context, params *orchestrations2.StartSessionRequest, state *queries.GetShopperResponse, logger log.Logger) workflow.CancelFunc {
 	cctx, cancelInventory := workflow.WithCancel(workflow.WithChildOptions(ctx, workflow.ChildWorkflowOptions{
 		WorkflowID: state.InventoryId,
 	}))
-	expSess := &ExpiringSession{}
 
 	workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.CreateInventory, &orchestrations2.CreateInventoryRequest{Email: params.Email, Id: state.InventoryId})
 	logger.Debug("inventory created", "inv")
+	return cancelInventory
+}
+
+func keepShopping(ctx workflow.Context, params *orchestrations2.StartSessionRequest, logger log.Logger) error {
+	expSess := &ExpiringSession{}
 	if err := expSess.SleepUntil(
 		ctx,
 		time.Second*time.Duration(params.DurationSeconds),
@@ -91,7 +108,14 @@ func (w *Orchestrations) Shopper(ctx workflow.Context, params *orchestrations2.S
 		logger.Error("session errored out", err)
 		return err
 	}
-	cancelInventory()
-	logger.Info("session timed out and inventory canceled")
+	return nil
+}
+
+func setupQueries(ctx workflow.Context, state *queries.GetShopperResponse) error {
+	if err := workflow.SetQueryHandler(ctx, QueryName(&queries.GetShopperRequest{}), func(req *queries.GetShopperRequest) (*queries.GetShopperResponse, error) {
+		return state, nil
+	}); err != nil {
+		return fmt.Errorf("failed to setup shopper query %w", err)
+	}
 	return nil
 }
