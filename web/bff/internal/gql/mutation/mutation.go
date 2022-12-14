@@ -7,7 +7,7 @@ import (
 
 type Mutation struct{}
 
-func (m *Mutation) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+func (m Mutation) AddGameToCart(ctx context.Context, input model.CartItem) (*model.Cart, error) {
 	//TODO implement me
 	panic("implement me")
 }

@@ -1,18 +1,14 @@
 package gql
 
 import (
-	"github.com/99designs/gqlgen/plugin/federation/testdata/entityresolver/generated"
+	"github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
 	"github.com/temporalio/temporal-shop/web/bff/internal/gql/graph"
 	"github.com/temporalio/temporal-shop/web/bff/internal/gql/mutation"
 	"github.com/temporalio/temporal-shop/web/bff/internal/gql/query"
 )
 
 type Resolver struct {
-}
-
-func (r *Resolver) Entity() generated.EntityResolver {
-	//TODO implement me
-	panic("implement me")
+	temporal *temporal.Clients
 }
 
 func (r Resolver) Mutation() graph.MutationResolver {
@@ -20,5 +16,5 @@ func (r Resolver) Mutation() graph.MutationResolver {
 }
 
 func (r Resolver) Query() graph.QueryResolver {
-	return &query.Query{}
+	return query.NewQuery(r.temporal)
 }

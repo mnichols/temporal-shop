@@ -26,10 +26,19 @@ func Authenticate(authenticator *auth.Authenticator) func(next http.Handler) htt
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-			ctx = context.WithValue(ctx, ContextKeyAuthentication, authentication)
-			r = r.WithContext(ctx)
+			r = r.WithContext(WithAuth(ctx, authentication))
 			next.ServeHTTP(w, r)
 		}
 		return http.HandlerFunc(fn)
 	}
+}
+func WithAuth(ctx context.Context, a *auth.Authentication) context.Context {
+	return context.WithValue(ctx, ContextKeyAuthentication, a)
+}
+func GetAuth(ctx context.Context) (*auth.Authentication, bool) {
+	a, ok := ctx.Value(ContextKeyAuthentication).(*auth.Authentication)
+	if !ok {
+		return nil, ok
+	}
+	return a, true
 }

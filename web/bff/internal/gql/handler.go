@@ -2,15 +2,23 @@ package gql
 
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/plugin/federation/testdata/entityresolver/generated"
+	"github.com/temporalio/temporal-shop/web/bff/internal/gql/graph"
 )
 
-func NewHandlers() (*handler.Server, error) {
-	cfg := generated.Config{
-		Resolvers:  &Resolver{},
-		Directives: generated.DirectiveRoot{},
-		Complexity: generated.ComplexityRoot{},
+func NewHandlers(opts ...Option) (*handler.Server, error) {
+
+	r := &Resolver{}
+	d := graph.DirectiveRoot{}
+	c := graph.ComplexityRoot{}
+
+	for _, o := range opts {
+		o(r, d, c)
 	}
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(cfg))
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+		Resolvers:  r,
+		Directives: d,
+		Complexity: c,
+	}))
 	return srv, nil
 }

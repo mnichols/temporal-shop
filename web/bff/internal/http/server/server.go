@@ -130,7 +130,7 @@ func (s *Server) buildApiRouter(r chi.Router) chi.Router {
 		s.appendError(err)
 		return nil
 	}
-	gqlHandlers, err := gql.NewHandlers()
+	gqlHandlers, err := gql.NewHandlers(gql.WithTemporal(s.temporal))
 	if err != nil {
 		s.appendError(err)
 		return nil

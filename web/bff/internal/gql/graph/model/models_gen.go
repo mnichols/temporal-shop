@@ -2,23 +2,27 @@
 
 package model
 
-type Dog struct {
+type Cart struct {
 	ID string `json:"id"`
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type CartItem struct {
+	ProductID string `json:"productId"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type Game struct {
+	ID       string `json:"id"`
+	Product  string `json:"product"`
+	Category string `json:"category"`
+	ImageURL string `json:"image_url"`
+	Price    string `json:"price"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type Games struct {
+	Items []*Game `json:"items"`
+}
+
+type Shopper struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
 }

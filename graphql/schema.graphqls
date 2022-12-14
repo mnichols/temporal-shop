@@ -2,30 +2,41 @@
 #
 # https://gqlgen.com/getting-started/
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
+type Game {
+  id: String!
+  product: String!
+  category: String!
+  image_url: String!
+  price: String!
 }
-
-type User {
-  id: ID!
-  name: String!
+type Games {
+  items: [Game!]!
 }
-type Dog {
-  id: ID!
+type Shopper {
+  id: String!
+  email: String!
+}
+type Cart {
+  id: String!
 }
 type Query {
-  todos: [Todo!]!
-  dogs: [Dog!]!
+  games: Games!
+  shopper: Shopper!
 }
 
-input NewTodo {
-  text: String!
-  userId: String!
+
+input CartItem {
+  productId: String!
 }
 
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  addGameToCart(input: CartItem!): Cart!
 }
+#input NewTodo {
+#  text: String!
+#  userId: String!
+#}
+#
+#type Mutation {
+#  createTodo(input: NewTodo!): Todo!
+#}

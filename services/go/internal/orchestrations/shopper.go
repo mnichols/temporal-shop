@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const SessionMinSeconds = 120
+const SessionMinSeconds = 3600 * 24 * 60
 
 type ShopperState struct {
 	InventoryID string
@@ -50,6 +50,9 @@ func (u *ExpiringSession) SleepUntil(ctx workflow.Context, durationSeconds time.
 				timerCancel() // cancel outstanding timer
 				req := &commands.RefreshShopperRequest{}
 				c.Receive(timerCtx, &req) // update wake-up time
+				if req.DurationSeconds == 0 {
+					req.DurationSeconds = SessionMinSeconds
+				}
 				u.durationSeconds = time.Second * time.Duration(req.DurationSeconds)
 				logger.Info("Wake up time update requested")
 			}).

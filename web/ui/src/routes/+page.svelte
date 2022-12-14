@@ -5,13 +5,18 @@
     import {base} from "$app/paths";
     import Link from "$components/link/Link.svelte";
 
-        const todos = queryStore({
+        const games = queryStore({
             client: getContextClient(),
             query: gql`
       query {
-        todos {
-          id
-          title
+        games {
+            items {
+                id,
+                product,
+                image_url,
+                category,
+
+            }
         }
       }
     `,

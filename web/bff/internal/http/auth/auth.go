@@ -26,7 +26,8 @@ type SessionStore interface {
 	Start(ctx context.Context, params *orchestrations.StartSessionRequest) error
 }
 type Authentication struct {
-	Email string
+	Email     string
+	SessionID *session.ID
 }
 type Authenticator struct {
 	sessionStore   SessionStore
@@ -59,7 +60,7 @@ func (a *Authenticator) AuthenticateRequest(r *http.Request) (*Authentication, e
 	if err != nil {
 		return nil, AuthenticationFailedError
 	}
-	return &Authentication{Email: email}, nil
+	return &Authentication{Email: email, SessionID: id}, nil
 }
 func (a *Authenticator) StartSession(ctx context.Context, email string) error {
 	id, err := session.NewID([]byte(a.encryptionKey), a.associatedData, &values.SessionID{Email: email})
