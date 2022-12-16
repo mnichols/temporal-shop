@@ -26,3 +26,7 @@ type Shopper struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
 }
+
+type ShopperInput struct {
+	ShopperID *string `json:"shopperId"`
+}

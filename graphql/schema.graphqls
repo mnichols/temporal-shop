@@ -19,9 +19,13 @@ type Shopper {
 type Cart {
   id: String!
 }
+
+input ShopperInput {
+  shopperId: String
+}
 type Query {
   games: Games!
-  shopper: Shopper!
+  shopper(input: ShopperInput): Shopper!
 }
 
 

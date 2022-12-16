@@ -32,11 +32,11 @@ func Authenticate(authenticator *auth.Authenticator) func(next http.Handler) htt
 		return http.HandlerFunc(fn)
 	}
 }
-func WithAuth(ctx context.Context, a *auth.Authentication) context.Context {
+func WithAuth(ctx context.Context, a auth.AuthenticationDetailer) context.Context {
 	return context.WithValue(ctx, ContextKeyAuthentication, a)
 }
-func GetAuth(ctx context.Context) (*auth.Authentication, bool) {
-	a, ok := ctx.Value(ContextKeyAuthentication).(*auth.Authentication)
+func GetAuth(ctx context.Context) (auth.AuthenticationDetailer, bool) {
+	a, ok := ctx.Value(ContextKeyAuthentication).(auth.AuthenticationDetailer)
 	if !ok {
 		return nil, ok
 	}

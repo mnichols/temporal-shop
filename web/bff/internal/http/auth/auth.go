@@ -17,6 +17,9 @@ import (
 const sessionCookieName = "session"
 const headerAuthorization = "authorization"
 
+type AuthenticationDetailer interface {
+	SessionID() string
+}
 type Claims struct {
 	jwt.RegisteredClaims
 	Email string `json:"email"`
@@ -27,8 +30,13 @@ type SessionStore interface {
 }
 type Authentication struct {
 	Email     string
-	SessionID *session.ID
+	sessionID *session.ID
 }
+
+func (a *Authentication) SessionID() string {
+	return a.sessionID.String()
+}
+
 type Authenticator struct {
 	sessionStore   SessionStore
 	encryptionKey  string
@@ -60,7 +68,7 @@ func (a *Authenticator) AuthenticateRequest(r *http.Request) (*Authentication, e
 	if err != nil {
 		return nil, AuthenticationFailedError
 	}
-	return &Authentication{Email: email, SessionID: id}, nil
+	return &Authentication{Email: email, sessionID: id}, nil
 }
 func (a *Authenticator) StartSession(ctx context.Context, email string) error {
 	id, err := session.NewID([]byte(a.encryptionKey), a.associatedData, &values.SessionID{Email: email})
