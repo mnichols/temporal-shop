@@ -56,8 +56,8 @@ type ComplexityRoot struct {
 		Product  func(childComplexity int) int
 	}
 
-	Games struct {
-		Items func(childComplexity int) int
+	Inventory struct {
+		Games func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -65,13 +65,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Games   func(childComplexity int) int
-		Shopper func(childComplexity int, input *model.ShopperInput) int
+		Inventory func(childComplexity int) int
+		Shopper   func(childComplexity int, input *model.ShopperInput) int
 	}
 
 	Shopper struct {
-		Email func(childComplexity int) int
-		ID    func(childComplexity int) int
+		Email       func(childComplexity int) int
+		ID          func(childComplexity int) int
+		InventoryID func(childComplexity int) int
 	}
 }
 
@@ -79,7 +80,7 @@ type MutationResolver interface {
 	AddGameToCart(ctx context.Context, input model.CartItem) (*model.Cart, error)
 }
 type QueryResolver interface {
-	Games(ctx context.Context) (*model.Games, error)
+	Inventory(ctx context.Context) (*model.Inventory, error)
 	Shopper(ctx context.Context, input *model.ShopperInput) (*model.Shopper, error)
 }
 
@@ -140,12 +141,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Game.Product(childComplexity), true
 
-	case "Games.items":
-		if e.complexity.Games.Items == nil {
+	case "Inventory.games":
+		if e.complexity.Inventory.Games == nil {
 			break
 		}
 
-		return e.complexity.Games.Items(childComplexity), true
+		return e.complexity.Inventory.Games(childComplexity), true
 
 	case "Mutation.addGameToCart":
 		if e.complexity.Mutation.AddGameToCart == nil {
@@ -159,12 +160,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AddGameToCart(childComplexity, args["input"].(model.CartItem)), true
 
-	case "Query.games":
-		if e.complexity.Query.Games == nil {
+	case "Query.inventory":
+		if e.complexity.Query.Inventory == nil {
 			break
 		}
 
-		return e.complexity.Query.Games(childComplexity), true
+		return e.complexity.Query.Inventory(childComplexity), true
 
 	case "Query.shopper":
 		if e.complexity.Query.Shopper == nil {
@@ -191,6 +192,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Shopper.ID(childComplexity), true
+
+	case "Shopper.inventoryId":
+		if e.complexity.Shopper.InventoryID == nil {
+			break
+		}
+
+		return e.complexity.Shopper.InventoryID(childComplexity), true
 
 	}
 	return 0, false
@@ -273,12 +281,13 @@ type Game {
   image_url: String!
   price: String!
 }
-type Games {
-  items: [Game!]!
+type Inventory {
+  games: [Game!]!
 }
 type Shopper {
   id: String!
   email: String!
+  inventoryId: String!
 }
 type Cart {
   id: String!
@@ -288,7 +297,7 @@ input ShopperInput {
   shopperId: String
 }
 type Query {
-  games: Games!
+  inventory: Inventory!
   shopper(input: ShopperInput): Shopper!
 }
 
@@ -663,8 +672,8 @@ func (ec *executionContext) fieldContext_Game_price(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Games_items(ctx context.Context, field graphql.CollectedField, obj *model.Games) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Games_items(ctx, field)
+func (ec *executionContext) _Inventory_games(ctx context.Context, field graphql.CollectedField, obj *model.Inventory) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Inventory_games(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -677,7 +686,7 @@ func (ec *executionContext) _Games_items(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Items, nil
+		return obj.Games, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -694,9 +703,9 @@ func (ec *executionContext) _Games_items(ctx context.Context, field graphql.Coll
 	return ec.marshalNGame2ᚕᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐGameᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Games_items(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Inventory_games(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Games",
+		Object:     "Inventory",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -778,8 +787,8 @@ func (ec *executionContext) fieldContext_Mutation_addGameToCart(ctx context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_games(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_games(ctx, field)
+func (ec *executionContext) _Query_inventory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_inventory(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -792,7 +801,7 @@ func (ec *executionContext) _Query_games(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Games(rctx)
+		return ec.resolvers.Query().Inventory(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -804,12 +813,12 @@ func (ec *executionContext) _Query_games(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Games)
+	res := resTmp.(*model.Inventory)
 	fc.Result = res
-	return ec.marshalNGames2ᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐGames(ctx, field.Selections, res)
+	return ec.marshalNInventory2ᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐInventory(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_games(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_inventory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -817,10 +826,10 @@ func (ec *executionContext) fieldContext_Query_games(ctx context.Context, field 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "items":
-				return ec.fieldContext_Games_items(ctx, field)
+			case "games":
+				return ec.fieldContext_Inventory_games(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Games", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Inventory", field.Name)
 		},
 	}
 	return fc, nil
@@ -869,6 +878,8 @@ func (ec *executionContext) fieldContext_Query_shopper(ctx context.Context, fiel
 				return ec.fieldContext_Shopper_id(ctx, field)
 			case "email":
 				return ec.fieldContext_Shopper_email(ctx, field)
+			case "inventoryId":
+				return ec.fieldContext_Shopper_inventoryId(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Shopper", field.Name)
 		},
@@ -1092,6 +1103,50 @@ func (ec *executionContext) _Shopper_email(ctx context.Context, field graphql.Co
 }
 
 func (ec *executionContext) fieldContext_Shopper_email(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Shopper",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Shopper_inventoryId(ctx context.Context, field graphql.CollectedField, obj *model.Shopper) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Shopper_inventoryId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InventoryID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Shopper_inventoryId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Shopper",
 		Field:      field,
@@ -3025,19 +3080,19 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var gamesImplementors = []string{"Games"}
+var inventoryImplementors = []string{"Inventory"}
 
-func (ec *executionContext) _Games(ctx context.Context, sel ast.SelectionSet, obj *model.Games) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, gamesImplementors)
+func (ec *executionContext) _Inventory(ctx context.Context, sel ast.SelectionSet, obj *model.Inventory) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, inventoryImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Games")
-		case "items":
+			out.Values[i] = graphql.MarshalString("Inventory")
+		case "games":
 
-			out.Values[i] = ec._Games_items(ctx, field, obj)
+			out.Values[i] = ec._Inventory_games(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -3111,7 +3166,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "games":
+		case "inventory":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3120,7 +3175,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_games(ctx, field)
+				res = ec._Query_inventory(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3200,6 +3255,13 @@ func (ec *executionContext) _Shopper(ctx context.Context, sel ast.SelectionSet, 
 		case "email":
 
 			out.Values[i] = ec._Shopper_email(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "inventoryId":
+
+			out.Values[i] = ec._Shopper_inventoryId(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -3621,18 +3683,18 @@ func (ec *executionContext) marshalNGame2ᚖgithubᚗcomᚋtemporalioᚋtemporal
 	return ec._Game(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNGames2githubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐGames(ctx context.Context, sel ast.SelectionSet, v model.Games) graphql.Marshaler {
-	return ec._Games(ctx, sel, &v)
+func (ec *executionContext) marshalNInventory2githubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐInventory(ctx context.Context, sel ast.SelectionSet, v model.Inventory) graphql.Marshaler {
+	return ec._Inventory(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNGames2ᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐGames(ctx context.Context, sel ast.SelectionSet, v *model.Games) graphql.Marshaler {
+func (ec *executionContext) marshalNInventory2ᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐInventory(ctx context.Context, sel ast.SelectionSet, v *model.Inventory) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._Games(ctx, sel, v)
+	return ec._Inventory(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNShopper2githubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐShopper(ctx context.Context, sel ast.SelectionSet, v model.Shopper) graphql.Marshaler {

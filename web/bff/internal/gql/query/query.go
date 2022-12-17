@@ -9,11 +9,13 @@ func NewQuery(t *temporal.Clients) *Query {
 	q.temporal = t
 
 	q.shopper = &shopper{t.Client}
+	q.inventory = &inventory{temporal: t.Client, shopper: q.Shopper}
 
 	return q
 }
 
 type Query struct {
 	*shopper
-	temporal *temporal.Clients
+	temporal  *temporal.Clients
+	inventory *inventory
 }

@@ -17,6 +17,7 @@ import (
 
 func Test_Shopper(t *testing.T) {
 	id := cuid.New()
+	email := "me@example.org"
 	queryType := orchestrations.QueryName(&queries.GetShopperRequest{})
 
 	/*
@@ -36,7 +37,7 @@ func Test_Shopper(t *testing.T) {
 			id:       id,
 			auth:     &mockAuth{},
 			response: &queries.GetShopperResponse{ShopperId: id},
-			expect:   &model.Shopper{ID: id, Email: "me@example.org"},
+			expect:   &model.Shopper{ID: id, Email: email},
 		},
 		{
 			name:      "shopper has no session",
@@ -52,7 +53,7 @@ func Test_Shopper(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			A := assert.New(t)
 			mc := &mocks.Client{}
-			ev := &mockEncodedValue{value: &queries.GetShopperResponse{ShopperId: id, Email: "me@example.org"}}
+			ev := &mockEncodedValue{value: &queries.GetShopperResponse{ShopperId: id, Email: email}}
 			mc.On("QueryWorkflow", mock.Anything, id, "", queryType).Return(ev, tt.queryErr)
 			sut := shopper{temporal: mc}
 			ctx := context.Background()

@@ -36,7 +36,8 @@ func (q *shopper) Shopper(ctx context.Context, input *model.ShopperInput) (*mode
 		return nil, fmt.Errorf("failed to get response values %w", merr)
 	}
 	return &model.Shopper{
-		ID:    response.ShopperId,
-		Email: response.Email,
+		ID:          response.ShopperId,
+		Email:       response.Email,
+		InventoryID: response.InventoryId,
 	}, nil
 }
