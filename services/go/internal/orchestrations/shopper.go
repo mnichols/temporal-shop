@@ -1,16 +1,19 @@
 package orchestrations
 
 import (
+	"errors"
 	"fmt"
 	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
 	orchestrations2 "github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1"
 	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
+	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/workflow"
 	"time"
 )
 
 const SessionMinSeconds = 3600 * 24 * 60
+const ShopperRefreshCountThreshold = 500
 
 type ShopperState struct {
 	InventoryID string
@@ -18,16 +21,23 @@ type ShopperState struct {
 	Email       string
 }
 
-// ExpiringSession is an example of a timer that can have its wake time updated
+// ExpiringSession is an example of a timer that can have its duration updated
 type ExpiringSession struct {
-	durationSeconds time.Duration
+	params            *orchestrations2.StartShopperRequest
+	durationSeconds   time.Duration
+	refreshesReceived int
 }
 
 // SleepUntil sleeps until the provided wake-up time.
 // The wake-up time can be updated at any time by sending a new time over updateWakeUpTimeCh.
 // Supports ctx cancellation.
 // Returns temporal.CanceledError if ctx was canceled.
-func (u *ExpiringSession) SleepUntil(ctx workflow.Context, durationSeconds time.Duration, refreshShopperChan workflow.ReceiveChannel) (err error) {
+// Returns temporal.ContinueAsNewError if threshold for refreshes is met
+func (u *ExpiringSession) SleepUntil(
+	ctx workflow.Context,
+	durationSeconds time.Duration,
+	refreshShopperChan workflow.ReceiveChannel,
+) (err error) {
 	logger := workflow.GetLogger(ctx)
 	u.durationSeconds = durationSeconds
 	timerFired := false
@@ -53,17 +63,25 @@ func (u *ExpiringSession) SleepUntil(ctx workflow.Context, durationSeconds time.
 				if req.DurationSeconds == 0 {
 					req.DurationSeconds = SessionMinSeconds
 				}
+				u.refreshesReceived = u.refreshesReceived + 1
 				u.durationSeconds = time.Second * time.Duration(req.DurationSeconds)
 				logger.Info("Wake up time update requested")
 			}).
 			Select(timerCtx)
+		// we've received many events so wipe the slate clean
+		if u.refreshesReceived >= ShopperRefreshCountThreshold {
+			return workflow.NewContinueAsNewError(ctx, TypeOrchestrations.Shopper, u.params)
+		}
 	}
 	return ctx.Err()
 }
 
-func (w *Orchestrations) Shopper(ctx workflow.Context, params *orchestrations2.StartSessionRequest) error {
+func (w *Orchestrations) Shopper(ctx workflow.Context, params *orchestrations2.StartShopperRequest) error {
 	if params.DurationSeconds == 0 {
 		params.DurationSeconds = SessionMinSeconds
+	}
+	if params.InventoryId == "" {
+		params.InventoryId = inventory2.InventorySessionID(params.Id)
 	}
 	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 3,
@@ -71,34 +89,56 @@ func (w *Orchestrations) Shopper(ctx workflow.Context, params *orchestrations2.S
 	logger := log.With(workflow.GetLogger(ctx), "email", params.Email)
 	logger.Info("started shopper")
 
-	state := &queries.GetShopperResponse{ShopperId: params.Id, Email: params.Email, InventoryId: fmt.Sprintf("inv_%s", params.Id)}
+	state := &queries.GetShopperResponse{
+		ShopperId:   params.Id,
+		Email:       params.Email,
+		InventoryId: params.InventoryId,
+	}
 
 	if err := setupQueries(ctx, state); err != nil {
 		return err
 	}
 
-	cancelInventory := prepareInventory(ctx, params, state, logger)
+	inventoryFuture, _ := prepareInventory(ctx, params, state, logger)
 
 	if err := keepShopping(ctx, params, logger); err != nil {
-		return err
+		if !errors.Is(err, workflow.ErrCanceled) {
+			return err
+		}
 	}
+	logger.Info("canceling inventory")
 
-	cancelInventory()
+	if err := workflow.RequestCancelExternalWorkflow(ctx, params.InventoryId, "").Get(ctx, nil); err != nil {
+		logger.Error("failure to cancel inventory", "err", err)
+	}
+	if err := inventoryFuture.Get(ctx, nil); err != nil {
+		logger.Error("inventory cancel failure", "err", err)
+	}
+	//cancelInventory()
 	logger.Info("session timed out and inventory canceled")
 	return nil
 }
 
-func prepareInventory(ctx workflow.Context, params *orchestrations2.StartSessionRequest, state *queries.GetShopperResponse, logger log.Logger) workflow.CancelFunc {
+func prepareInventory(
+	ctx workflow.Context,
+	params *orchestrations2.StartShopperRequest,
+	state *queries.GetShopperResponse,
+	logger log.Logger,
+) (workflow.ChildWorkflowFuture, workflow.CancelFunc) {
 	cctx, cancelInventory := workflow.WithCancel(workflow.WithChildOptions(ctx, workflow.ChildWorkflowOptions{
-		WorkflowID: state.InventoryId,
+		WorkflowID:          state.InventoryId,
+		WaitForCancellation: true,
 	}))
 
-	workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.CreateInventory, &orchestrations2.CreateInventoryRequest{Email: params.Email, Id: state.InventoryId})
+	f := workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.CreateInventory, &orchestrations2.CreateInventoryRequest{
+		Email: params.Email,
+		Id:    state.InventoryId,
+	})
 	logger.Debug("inventory created", "inv")
-	return cancelInventory
+	return f, cancelInventory
 }
 
-func keepShopping(ctx workflow.Context, params *orchestrations2.StartSessionRequest, logger log.Logger) error {
+func keepShopping(ctx workflow.Context, params *orchestrations2.StartShopperRequest, logger log.Logger) error {
 	expSess := &ExpiringSession{}
 	if err := expSess.SleepUntil(
 		ctx,
@@ -112,9 +152,13 @@ func keepShopping(ctx workflow.Context, params *orchestrations2.StartSessionRequ
 }
 
 func setupQueries(ctx workflow.Context, state *queries.GetShopperResponse) error {
-	if err := workflow.SetQueryHandler(ctx, QueryName(&queries.GetShopperRequest{}), func(req *queries.GetShopperRequest) (*queries.GetShopperResponse, error) {
-		return state, nil
-	}); err != nil {
+	if err := workflow.SetQueryHandler(
+		ctx,
+		QueryName(&queries.GetShopperRequest{}),
+		func(req *queries.GetShopperRequest) (*queries.GetShopperResponse, error) {
+			return state, nil
+		},
+	); err != nil {
 		return fmt.Errorf("failed to setup shopper query %w", err)
 	}
 	return nil

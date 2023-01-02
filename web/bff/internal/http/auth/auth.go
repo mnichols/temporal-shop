@@ -26,7 +26,7 @@ type Claims struct {
 }
 type SessionStore interface {
 	Validate(ctx context.Context, id string) error
-	Start(ctx context.Context, params *orchestrations.StartSessionRequest) error
+	Start(ctx context.Context, params *orchestrations.StartShopperRequest) error
 }
 type Authentication struct {
 	Email     string
@@ -75,7 +75,7 @@ func (a *Authenticator) StartSession(ctx context.Context, email string) error {
 	if err != nil {
 		return err
 	}
-	return a.sessionStore.Start(ctx, &orchestrations.StartSessionRequest{
+	return a.sessionStore.Start(ctx, &orchestrations.StartShopperRequest{
 		Id:    id.String(),
 		Email: email,
 	})

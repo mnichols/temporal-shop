@@ -3,6 +3,7 @@ package orchestrations
 import (
 	"github.com/stretchr/testify/suite"
 	"go.temporal.io/sdk/testsuite"
+	"testing"
 )
 
 // SampleTestSuite
@@ -33,4 +34,8 @@ func (s *SampleTestSuite) BeforeTest(suiteName, testName string) {
 // AfterTest https://pkg.go.dev/github.com/stretchr/testify/suite#AfterTest
 func (s *SampleTestSuite) AfterTest(suiteName, testName string) {
 	s.env.AssertExpectations(s.T())
+}
+
+func TestSample(t *testing.T) {
+	suite.Run(t, &SampleTestSuite{})
 }

@@ -17,7 +17,7 @@ func (t *ThrowingSessionStore) Validate(ctx context.Context, id string) error {
 	panic("implement me")
 }
 
-func (t *ThrowingSessionStore) Start(ctx context.Context, params *orchestrations2.StartSessionRequest) error {
+func (t *ThrowingSessionStore) Start(ctx context.Context, params *orchestrations2.StartShopperRequest) error {
 	//TODO implement me
 	panic("implement me")
 }

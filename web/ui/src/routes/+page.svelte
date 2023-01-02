@@ -5,23 +5,24 @@
     import {base} from "$app/paths";
     import Link from "$components/link/Link.svelte";
     import Default from "$components/layouts/Default.svelte";
-
-        const games = queryStore({
-            client: getContextClient(),
-            query: gql`
+    const games = queryStore({
+        client: getContextClient(),
+        query: gql`
       query {
-        games {
-            items {
+        inventory {
+            games {
                 id,
                 product,
                 image_url,
                 category,
-
             }
         }
       }
     `,
-        })
+    })
+
+    console.log('games', games)
+
 
 </script>
 <Default>

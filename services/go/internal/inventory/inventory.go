@@ -9,7 +9,7 @@ import (
 )
 
 func InventorySessionID(sessionID string) string {
-	return fmt.Sprint("%s_inv", sessionID)
+	return fmt.Sprintf("inv_%s", sessionID)
 }
 func NewInventoryService() (*InventoryService, error) {
 	return &InventoryService{}, nil
@@ -21,6 +21,7 @@ type InventoryService struct {
 
 func (i *InventoryService) GetGames(ctx context.Context, request *inventory.GetGamesRequest) (*inventory.GetGamesResponse, error) {
 	var games []*inventory.Game
+
 	data := []byte(gamesV1JSON)
 	err := json.Unmarshal(data, &games)
 	if err != nil {

@@ -16,6 +16,6 @@ func NewQuery(t *temporal.Clients) *Query {
 
 type Query struct {
 	*shopper
-	temporal  *temporal.Clients
-	inventory *inventory
+	*inventory
+	temporal *temporal.Clients
 }

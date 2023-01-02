@@ -84,9 +84,9 @@ func NewClients(ctx context.Context, opts ...Option) (*Clients, error) {
 		return nil, fmt.Errorf("temporal Namespace must be defined")
 	}
 
-	logger.Info("creating temporal clients", log.Fields{"client_options": result.ClientOptions})
+	logger.Info("creating temporal clients", log.Fields{"client_options_namespace": result.ClientOptions.Namespace})
 	var err error
-	if result.Client, err = sdkclient.NewClient(result.ClientOptions); err != nil {
+	if result.Client, err = sdkclient.Dial(result.ClientOptions); err != nil {
 		return nil, fmt.Errorf("failed to new temporal client %w", err)
 	}
 	//if result.NamespaceClient, err = sdkclient.NewNamespaceClient(result.ClientOptions); err != nil {

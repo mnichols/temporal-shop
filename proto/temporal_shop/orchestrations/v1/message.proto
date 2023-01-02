@@ -11,10 +11,11 @@ message PingResponse {
   string name = 1;
 }
 
-message StartSessionRequest {
+message StartShopperRequest {
   string id = 1;
   string email = 2;
   int64 durationSeconds = 3;
+  string inventory_id = 4;
 }
 
 message CreateInventoryRequest {
