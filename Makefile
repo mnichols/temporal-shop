@@ -26,6 +26,7 @@ genapi:
 
 gengql:
 	@cd web/bff/internal/gql; go run github.com/99designs/gqlgen generate
+	@cd web/ui; npm run codegen
 
 test:
 	go test -race -timeout=5m -cover -count=1  ./...

@@ -49,7 +49,7 @@
             <p>Error! {$inv.error.message}</p>
         {:else}
             {#each toCategories($inv.data.inventory) as category}
-                <div><a target="_blank" href="{base}/categories/{category}">{ category }</a></div>
+                <div><a href="{base}/categories/{category}">{ category }</a></div>
             {/each}
         {/if}
     </div>
