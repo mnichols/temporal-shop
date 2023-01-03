@@ -1,0 +1,13 @@
+schema: ../../graphql/schema.graphqls
+documents:
+  - src/**/*.svelte
+ignoreNoDocuments: true
+generates:
+  ./src/gql/:
+    preset: client-preset
+    plugins:
+      - typescript
+      - typescript-operations
+      - typed-document-node
+    config:
+      useTypeImports: true

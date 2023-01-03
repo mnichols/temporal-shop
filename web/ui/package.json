@@ -11,9 +11,16 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "format": "prettier --plugin-search-dir . --write .",
-    "dev:test": ". ./.env && VITE_TEMPORAL_UI_BUILD_TARGET=local VITE_MODE=test vite dev --port 3000"
+    "dev:test": ". ./.env && VITE_TEMPORAL_UI_BUILD_TARGET=local VITE_MODE=test vite dev --port 3000",
+    "codegen": "export NODE_OPTIONS=\"--loader ts-node/esm\" && node codegen.ts && graphql-codegen-esm --config codegen.yml"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.16.2",
+    "@graphql-codegen/client-preset": "^1.2.4",
+    "@graphql-codegen/typed-document-node": "^2.3.11",
+    "@graphql-codegen/typescript": "^2.8.6",
+    "@graphql-codegen/typescript-operations": "^2.5.11",
+    "@graphql-typed-document-node/core": "^3.1.1",
     "@playwright/test": "^1.25.0",
     "@sveltejs/adapter-auto": "next",
     "@sveltejs/adapter-static": "^1.0.0-next.44",
@@ -34,12 +41,13 @@
     "svelte-preprocess": "^4.10.6",
     "tailwindcss": "^3.2.2",
     "tslib": "^2.3.1",
-    "typescript": "^4.7.4",
+    "typescript": "^4.9.4",
     "vite": "^4.0.1",
     "vitest": "^0.25.8"
   },
   "type": "module",
   "dependencies": {
+    "@kitql/graphql-codegen": "^0.5.4",
     "@sveltejs/kit": "^1.0.1",
     "@sveltejs/vite-plugin-svelte": "^2.0.2",
     "@urql/svelte": "^3.0.1",
@@ -47,6 +55,7 @@
     "prettier-plugin-tailwindcss": "^0.1.13",
     "type-fest": "^3.2.0",
     "uri-template": "^2.0.0",
-    "urql": "^3.0.3"
+    "urql": "^3.0.3",
+    "yaml": "^2.2.1"
   }
 }

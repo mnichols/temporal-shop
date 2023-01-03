@@ -139,6 +139,7 @@ func (s *ShopperTestSuite) Test_StartShopperSession_ContinuesAsNewAfterThreshold
 
 	s.env.RegisterDelayedCallback(func() {
 		// send up to the threshold
+		// doing more than 500 or so hangs tests...you've been warned
 		for i := 0; i <= ShopperRefreshCountThreshold; i++ {
 			refresh := &commands.RefreshShopperRequest{DurationSeconds: int64(time.Second * 1)}
 			s.env.SignalWorkflow(SignalName(refresh), refresh)

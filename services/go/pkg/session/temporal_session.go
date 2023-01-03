@@ -25,7 +25,7 @@ func (t *TemporalSessionStore) Validate(ctx context.Context, id string) error {
 	}
 	return nil
 }
-func (t *TemporalSessionStore) Start(ctx context.Context, params *orchestrations2.StartSessionRequest) error {
+func (t *TemporalSessionStore) Start(ctx context.Context, params *orchestrations2.StartShopperRequest) error {
 	logger := log.GetLogger(ctx)
 	opts := client.StartWorkflowOptions{
 		ID:        params.Id,
