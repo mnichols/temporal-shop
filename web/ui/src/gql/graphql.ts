@@ -26,7 +26,7 @@ export type Game = {
   __typename?: 'Game';
   category: Scalars['String'];
   id: Scalars['String'];
-  image_url: Scalars['String'];
+  imageUrl: Scalars['String'];
   price: Scalars['String'];
   product: Scalars['String'];
 };
@@ -34,6 +34,10 @@ export type Game = {
 export type Inventory = {
   __typename?: 'Inventory';
   games: Array<Game>;
+};
+
+export type InventoryInput = {
+  categoryId?: InputMaybe<Scalars['String']>;
 };
 
 export type Mutation = {
@@ -50,6 +54,11 @@ export type Query = {
   __typename?: 'Query';
   inventory: Inventory;
   shopper: Shopper;
+};
+
+
+export type QueryInventoryArgs = {
+  input?: InputMaybe<InventoryInput>;
 };
 
 
@@ -90,7 +99,7 @@ export type Game = {
   __typename?: 'Game';
   category: Scalars['String'];
   id: Scalars['String'];
-  image_url: Scalars['String'];
+  imageUrl: Scalars['String'];
   price: Scalars['String'];
   product: Scalars['String'];
 };
@@ -98,6 +107,10 @@ export type Game = {
 export type Inventory = {
   __typename?: 'Inventory';
   games: Array<Game>;
+};
+
+export type InventoryInput = {
+  categoryId?: InputMaybe<Scalars['String']>;
 };
 
 export type Mutation = {
@@ -114,6 +127,11 @@ export type Query = {
   __typename?: 'Query';
   inventory: Inventory;
   shopper: Shopper;
+};
+
+
+export type QueryInventoryArgs = {
+  input?: InputMaybe<InventoryInput>;
 };
 
 

@@ -28,3 +28,47 @@ aws s3api list-objects --bucket temporal-sa \
 
 - https://aws.amazon.com/premiumsupport/knowledge-center/read-access-objects-s3-bucket/
 - https://www.learnaws.org/2022/08/22/tag-objects-s3/
+
+## Development
+
+### Running The Things
+
+**Golang Services**
+
+`cd services/go && go run cmd/temporal_shop/main.go`
+
+**Golang Web BFF**
+
+`cd web && go run bff/cmd/bff/main.go`
+
+**Svelte UI**
+
+`cd web/ui && npm run dev`
+
+### Generating The Things
+
+**Protobufs API**
+
+`make genapi`
+
+**Graphql API**
+
+`make gengql`
+
+### Debugging The Things
+
+**grpcui** 
+
+You can interact with grpc services the workflow(s) consume with this tool.
+
+- [installation](go install github.com/fullstorydev/grpcui/cmd/grpcui@latest)
+- `cd services/go && go run cmd/temporal_shop/main.go`
+- `grpcui -plaintext localhost:9000`
+
+**graphiql dashboard** 
+
+`gqlgen` exposes a http handler for Graphiql that allows you to dive into our GraphQL models.
+
+1. Make `web/bff/.env` environment variable `HTTP_SERVER_SHOWS_GRAPHQL_PLAYGROUND=true`
+2. Restart the bff server
+3. Visit `localhost:8080/api/gql` in your browser

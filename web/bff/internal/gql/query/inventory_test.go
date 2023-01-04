@@ -85,7 +85,7 @@ func Test_Inventory(t *testing.T) {
 				var input *model.ShopperInput
 				ms.On("Shopper", mock.Anything, input).Return(tt.shopper, nil)
 			}
-			actual, err := sut.Inventory(ctx)
+			actual, err := sut.Inventory(ctx, nil)
 			if tt.expectErr != nil {
 				A.Error(err, tt.expectErr)
 			} else {

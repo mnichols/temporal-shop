@@ -16,7 +16,6 @@
                     product,
                     imageUrl,
                     category,
-                    price,
                 }
             }
           }
@@ -39,10 +38,9 @@
         </ul>
     </div>
     <div slot="main">
-        <h1 class="font-weight-bold">Temporal Shop</h1>
+        <h1>Temporal Shop</h1>
 
-
-        <h2 class="category font-weight-bold">{ data.categoryId}</h2>
+        <h2>{ data.categoryId}</h2>
         <h3>Games</h3>
             {#if $inv.fetching}
                 <p>Loading...</p>
@@ -50,20 +48,10 @@
                 <p>Error! {$inv.error.message}</p>
             {:else}
                 {#each $inv.data.inventory.games as game}
-                    <article class="game">
-                        <h3>{ game.product }</h3>
-                        <figure>
-                            <img src="{ game.imageUrl }" alt="game pic" />
-                            <figcaption>${ game.price}</figcaption>
-                        </figure>
-                    </article>
-
+                    <div>{ game.product }</div>
                 {/each}
             {/if}
     </div>
 </Default>
 
-<style>
-
-</style>
 

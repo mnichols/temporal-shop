@@ -27,6 +27,14 @@ var (
 		Template: uritemplate.MustNew("/login"),
 		Raw:      "/login",
 	}
+	GETGqlPlayground = Route{
+		Template: uritemplate.MustNew("/gql"),
+		Raw:      "/gql",
+	}
+	POSTGql = Route{
+		Template: uritemplate.MustNew("/gql"),
+		Raw:      "/gql",
+	}
 )
 
 type Route struct {

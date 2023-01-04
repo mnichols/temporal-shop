@@ -65,7 +65,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Inventory func(childComplexity int) int
+		Inventory func(childComplexity int, input *model.InventoryInput) int
 		Shopper   func(childComplexity int, input *model.ShopperInput) int
 	}
 
@@ -80,7 +80,7 @@ type MutationResolver interface {
 	AddGameToCart(ctx context.Context, input model.CartItem) (*model.Cart, error)
 }
 type QueryResolver interface {
-	Inventory(ctx context.Context) (*model.Inventory, error)
+	Inventory(ctx context.Context, input *model.InventoryInput) (*model.Inventory, error)
 	Shopper(ctx context.Context, input *model.ShopperInput) (*model.Shopper, error)
 }
 
@@ -120,7 +120,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Game.ID(childComplexity), true
 
-	case "Game.image_url":
+	case "Game.imageUrl":
 		if e.complexity.Game.ImageURL == nil {
 			break
 		}
@@ -165,7 +165,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Inventory(childComplexity), true
+		args, err := ec.field_Query_inventory_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Inventory(childComplexity, args["input"].(*model.InventoryInput)), true
 
 	case "Query.shopper":
 		if e.complexity.Query.Shopper == nil {
@@ -209,6 +214,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCartItem,
+		ec.unmarshalInputInventoryInput,
 		ec.unmarshalInputShopperInput,
 	)
 	first := true
@@ -278,7 +284,7 @@ type Game {
   id: String!
   product: String!
   category: String!
-  image_url: String!
+  imageUrl: String!
   price: String!
 }
 type Inventory {
@@ -296,8 +302,11 @@ type Cart {
 input ShopperInput {
   shopperId: String
 }
+input InventoryInput {
+  categoryId: String
+}
 type Query {
-  inventory: Inventory!
+  inventory(input: InventoryInput): Inventory!
   shopper(input: ShopperInput): Shopper!
 }
 
@@ -308,16 +317,7 @@ input CartItem {
 
 type Mutation {
   addGameToCart(input: CartItem!): Cart!
-}
-#input NewTodo {
-#  text: String!
-#  userId: String!
-#}
-#
-#type Mutation {
-#  createTodo(input: NewTodo!): Todo!
-#}
-`, BuiltIn: false},
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -352,6 +352,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_inventory_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.InventoryInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOInventoryInput2ᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐInventoryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -584,8 +599,8 @@ func (ec *executionContext) fieldContext_Game_category(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Game_image_url(ctx context.Context, field graphql.CollectedField, obj *model.Game) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Game_image_url(ctx, field)
+func (ec *executionContext) _Game_imageUrl(ctx context.Context, field graphql.CollectedField, obj *model.Game) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Game_imageUrl(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -615,7 +630,7 @@ func (ec *executionContext) _Game_image_url(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Game_image_url(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Game_imageUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Game",
 		Field:      field,
@@ -717,8 +732,8 @@ func (ec *executionContext) fieldContext_Inventory_games(ctx context.Context, fi
 				return ec.fieldContext_Game_product(ctx, field)
 			case "category":
 				return ec.fieldContext_Game_category(ctx, field)
-			case "image_url":
-				return ec.fieldContext_Game_image_url(ctx, field)
+			case "imageUrl":
+				return ec.fieldContext_Game_imageUrl(ctx, field)
 			case "price":
 				return ec.fieldContext_Game_price(ctx, field)
 			}
@@ -801,7 +816,7 @@ func (ec *executionContext) _Query_inventory(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Inventory(rctx)
+		return ec.resolvers.Query().Inventory(rctx, fc.Args["input"].(*model.InventoryInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -831,6 +846,17 @@ func (ec *executionContext) fieldContext_Query_inventory(ctx context.Context, fi
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Inventory", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_inventory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -2960,6 +2986,34 @@ func (ec *executionContext) unmarshalInputCartItem(ctx context.Context, obj inte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputInventoryInput(ctx context.Context, obj interface{}) (model.InventoryInput, error) {
+	var it model.InventoryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"categoryId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "categoryId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryId"))
+			it.CategoryID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputShopperInput(ctx context.Context, obj interface{}) (model.ShopperInput, error) {
 	var it model.ShopperInput
 	asMap := map[string]interface{}{}
@@ -3055,9 +3109,9 @@ func (ec *executionContext) _Game(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "image_url":
+		case "imageUrl":
 
-			out.Values[i] = ec._Game_image_url(ctx, field, obj)
+			out.Values[i] = ec._Game_imageUrl(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -4003,6 +4057,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOInventoryInput2ᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐInventoryInput(ctx context.Context, v interface{}) (*model.InventoryInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputInventoryInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOShopperInput2ᚖgithubᚗcomᚋtemporalioᚋtemporalᚑshopᚋwebᚋbffᚋinternalᚋgqlᚋgraphᚋmodelᚐShopperInput(ctx context.Context, v interface{}) (*model.ShopperInput, error) {

@@ -1,10 +1,11 @@
 package server
 
 type Config struct {
-	Port            string
-	GeneratedAppDir string
-	IsServingUI     bool
-	EncryptionKey   string
+	Port                   string
+	GeneratedAppDir        string
+	IsServingUI            bool
+	ShowsGraphqlPlayground bool
+	EncryptionKey          string
 }
 
 func (c Config) Prefix() string {

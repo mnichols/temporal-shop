@@ -139,12 +139,18 @@ func (s *Server) buildApiRouter(r chi.Router) chi.Router {
 	// public api
 	r = r.Group(func(r chi.Router) {
 		r.Post(routes.POSTLogin.Raw, loginHandlers.POST)
+		if s.cfg.ShowsGraphqlPlayground {
+			r.Get(routes.GETGqlPlayground.Raw, gqlHandlers.Playground)
+			r.Post(routes.POSTGql.Raw, gqlHandlers.Handler)
+		}
 	})
 	// secure api
 	r = r.Group(func(r chi.Router) {
 		r.Use(middleware.Authenticate(s.authenticator))
 		r.Get(routes.GETApi.Raw, apiHandlers.GET)
-		r.Handle("/gql", gqlHandlers)
+		if !s.cfg.ShowsGraphqlPlayground {
+			r.Post(routes.POSTGql.Raw, gqlHandlers.Handler)
+		}
 	})
 	return r
 }

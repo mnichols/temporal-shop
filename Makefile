@@ -25,8 +25,8 @@ genapi:
 	@cd proto; buf generate
 
 gengql:
-	@cd web/bff/internal/gql; go run github.com/99designs/gqlgen generate
 	@cd web/ui; npm run codegen
+	@cd web/bff/internal/gql; go run github.com/99designs/gqlgen generate
 
 test:
 	go test -race -timeout=5m -cover -count=1  ./...

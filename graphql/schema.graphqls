@@ -6,7 +6,7 @@ type Game {
   id: String!
   product: String!
   category: String!
-  image_url: String!
+  imageUrl: String!
   price: String!
 }
 type Inventory {
@@ -24,8 +24,11 @@ type Cart {
 input ShopperInput {
   shopperId: String
 }
+input InventoryInput {
+  categoryId: String
+}
 type Query {
-  inventory: Inventory!
+  inventory(input: InventoryInput): Inventory!
   shopper(input: ShopperInput): Shopper!
 }
 

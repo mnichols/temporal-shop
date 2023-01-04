@@ -14,12 +14,16 @@ type Game struct {
 	ID       string `json:"id"`
 	Product  string `json:"product"`
 	Category string `json:"category"`
-	ImageURL string `json:"image_url"`
+	ImageURL string `json:"imageUrl"`
 	Price    string `json:"price"`
 }
 
 type Inventory struct {
 	Games []*Game `json:"games"`
+}
+
+type InventoryInput struct {
+	CategoryID *string `json:"categoryId"`
 }
 
 type Shopper struct {

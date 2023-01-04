@@ -28,7 +28,7 @@ func inventoryFromProto(in *queries.GetInventoryResponse) *model.Inventory {
 	}
 	return out
 }
-func (q *inventory) Inventory(ctx context.Context) (*model.Inventory, error) {
+func (q *inventory) Inventory(ctx context.Context, input *model.InventoryInput) (*model.Inventory, error) {
 	logger := log.GetLogger(ctx)
 	logger.Info("fetching games")
 	response := &queries.GetInventoryResponse{}
@@ -48,13 +48,15 @@ func (q *inventory) Inventory(ctx context.Context) (*model.Inventory, error) {
 	}
 	var games []*model.Game
 	for _, g := range response.Games {
-		games = append(games, &model.Game{
-			ID:       g.Id,
-			Product:  g.Product,
-			Category: g.Category,
-			ImageURL: g.ImageUrl,
-			Price:    g.Price,
-		})
+		if (input == nil || input.CategoryID == nil) || (input != nil && input.CategoryID != nil && *input.CategoryID == g.Category) {
+			games = append(games, &model.Game{
+				ID:       g.Id,
+				Product:  g.Product,
+				Category: g.Category,
+				ImageURL: g.ImageUrl,
+				Price:    g.Price,
+			})
+		}
 	}
 
 	return &model.Inventory{
