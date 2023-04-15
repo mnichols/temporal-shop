@@ -1,0 +1,104 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+scalar Time
+
+type Cart {
+  id: String!
+  shopperId: String!
+  items: [CartItem!]!
+  subtotal: String
+  taxRate: String
+  total: String
+  tax: String
+  timestamp: Time
+}
+
+type CartItem {
+  productId: String!
+  quantity: Int!
+  subtotal: String!
+  price: String!
+  title: String!
+  category: String!
+}
+type Game {
+  id: String!
+  title: String!
+  category: String!
+  imageUrl: String!
+  price: String!
+}
+type Inventory {
+  categories: [String!]!
+  games: [Game!]!
+}
+type Ping {
+  timestamp: Time
+  value: String
+}
+type Pong {
+  timestamp: Time
+  value: String
+}
+type Shopper {
+  id: String!
+  email: String!
+  inventoryId: String!
+  cartId: String!
+}
+type User {
+  email: String!
+  token: String
+  ok: Boolean!
+}
+
+# Queries
+input CartInput {
+  cartId: String!
+  shopperId: String!
+}
+input CartItemInput {
+  productId: String!
+  quantity: Int!
+}
+input InventoryInput {
+  category: String
+}
+input ShopperInput {
+  shopperId: String
+}
+input UserInput {
+  token: String
+}
+input PingInput {
+  value: String
+  timestamp: Time
+}
+type Query {
+  inventory(input: InventoryInput): Inventory!
+  shopper(input: ShopperInput): Shopper!
+  cart(input: CartInput): Cart!
+  user(input: UserInput): User!
+  ping(input: PingInput): Pong!
+}
+
+# Mutations
+input SetCartItemsInput {
+  cartId: String!
+  items: [CartItemInput!]!
+}
+type Mutation {
+  setCartItems(input: SetCartItemsInput): Cart!
+#  publishCart(input: PublishCartInput!): Cart!
+}
+
+# Subscriptions
+input CartSubscriptionInput {
+  cartId: String!
+  topic: String
+}
+type Subscription {
+  cart(input: CartSubscriptionInput!): Cart!
+}

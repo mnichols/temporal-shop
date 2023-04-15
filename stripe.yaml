@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  secret-key: c2tfdGVzdF81MUt0RkdCSzRpbWJ0MnIzMENzYUliS1BKeEJRaEc2ZjV0UG9tNUlDNjhqd1lKY2hZZ2hrZUxvYTlQbGx0SUE5OU1VUnR4MVVuOUVYZ0JBS3lLak5jYm5SMjAwR0hZWUNqaDM=
+kind: Secret
+metadata:
+  creationTimestamp: "2022-11-01T18:30:44Z"
+  name: stripe
+  namespace: temporal-shop
+  resourceVersion: "44280145"
+  uid: 8b429cab-cd50-4f50-8a93-8d260546ec83
+type: Opaque

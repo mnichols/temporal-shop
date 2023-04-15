@@ -39,5 +39,6 @@ func (q *shopper) Shopper(ctx context.Context, input *model.ShopperInput) (*mode
 		ID:          response.ShopperId,
 		Email:       response.Email,
 		InventoryID: response.InventoryId,
+		CartID:      response.CartId,
 	}, nil
 }

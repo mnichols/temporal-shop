@@ -1,0 +1,19 @@
+query CurrentCart($input: CartInput) {
+    cart(input: $input) {
+        id,
+        shopperId,
+        total,
+        subtotal,
+        taxRate,
+        tax,
+        items {
+            productId,
+            quantity,
+            price,
+            subtotal,
+            title,
+            category,
+        },
+        timestamp,
+    }
+}

@@ -8,11 +8,16 @@ export default defineConfig({
   resolve: {
     alias: {
       $lib: path.resolve(__dirname, './src/lib'),
+      $gql: path.resolve(__dirname, './src/gql'),
       $types: path.resolve(__dirname, './src/types'),
       $components: path.resolve(__dirname, './src/lib/components/'),
       $app: path.resolve(__dirname, './src/lib/svelte-mocks/app/'),
       $fixtures: path.resolve(__dirname, './src/fixtures/'),
+      $env: path.resolve(__dirname, './src/lib/svelte-mocks/env/'),
     },
+  },
+  build: {
+    sourcemap: true
   },
   test: {
     globals: true,
@@ -26,7 +31,7 @@ export default defineConfig({
       ],
     },
     environment: 'jsdom',
-    // setupFiles: ['./vitest_setup.ts'],
+    setupFiles: ['./vitest-setup.ts'],
     deps: {
       inline: ['date-fns'],
     },

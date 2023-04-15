@@ -16,6 +16,9 @@ var configFile = ".env"
 type prefixer interface {
 	Prefix() string
 }
+type overrider interface {
+	Override() error
+}
 
 func MustLoad(filenames ...string) {
 	if len(filenames) == 0 {
@@ -53,6 +56,11 @@ func UnmarshalConfig(obj prefixer) (prefixer, error) {
 		return nil, fmt.Errorf("failed to process %T from environment with prefix %s: %w", obj, obj.Prefix(), err)
 	}
 
+	if ovr, ok := obj.(overrider); ok {
+		if err := ovr.Override(); err != nil {
+			return nil, err
+		}
+	}
 	return obj, nil
 }
 

@@ -15,13 +15,13 @@ interface Expandable {
     expand(values: Record<string, unknown>): string
 }
 
-type TemplatableURL = {
+export type TemplatableURL = {
     url?: string
     tpl?: Expandable
     params?: any
 }
 
-type RequiredTemplatableURL = RequireAtLeastOne<TemplatableURL, 'url' | 'tpl'>
+export type RequiredTemplatableURL = RequireAtLeastOne<TemplatableURL, 'url' | 'tpl'>
 
 export type APIError = {
   code: number
@@ -35,7 +35,7 @@ export type APIErrorResponse = {
 }
 export type ErrorCallback = (error: APIErrorResponse) => void
 
-type RequestOpts = {
+export interface RequestOpts  {
     body?: BodyInit
     method?: string
     headers?: Headers
@@ -43,13 +43,17 @@ type RequestOpts = {
     onError?: ErrorCallback,
     isBrowser?: boolean,
 }
-type APIResponse = {
+export type APIResponse = {
     response: Response,
 }
+let debugLogger = console.debug.bind(console, 'DEBUG','apiFetch:')
+let noopLogger = (...data: any[]) => {}
+
 export const apiFetch = async <T>(
     url: RequiredTemplatableURL,
     opts: RequestOpts
 ): Promise<APIResponse> => {
+    let log = noopLogger
     let actualURL = ''
     let defaultParams = {
         scheme: PUBLIC_API_ROOT_SCHEME,
@@ -62,6 +66,7 @@ export const apiFetch = async <T>(
     } else if (url.tpl) {
         actualURL = decodeURIComponent(url.tpl.expand(url.params || {}))
     }
+
     const {
         request = fetch,
         onError = noop(),
@@ -75,15 +80,16 @@ export const apiFetch = async <T>(
     if (!headers.has(HEADER_CONTENT_TYPE)) {
         headers.set(HEADER_CONTENT_TYPE, 'application/json')
     }
-  let requestOpts: RequestInit = {
+    let requestOpts: RequestInit = {
         body,
         method,
         headers,
     }
-
     requestOpts = withSecurityOptions(requestOpts, browser)
     requestOpts.headers = Object.fromEntries(new Headers(requestOpts.headers).entries())
+    log('making request', actualURL, requestOpts)
     let res = await request(actualURL, requestOpts)
+    log('received request', actualURL, res.status)
     return {
         response: res,
     }
@@ -91,7 +97,7 @@ export const apiFetch = async <T>(
 
 export const withSecurityOptions = (
     options: RequestInit = {},
-    isBrowser: browser,
+    isBrowser = browser,
 ): RequestInit => {
     options['credentials'] = 'include'
     options.headers = withCsrf(options?.headers || {}, isBrowser)
@@ -120,4 +126,20 @@ export const withCsrf = (headers: HeadersInit, isBrowser: boolean = browser): He
     }
 
     return h
+}
+export const fetchParams=(opts: RequestOpts): RequestInit => {
+    const {
+        method = 'GET',
+        body,
+    } = opts
+    let headers = new Headers(opts.headers || {})
+
+    let requestOpts: RequestInit = {
+        body,
+        method,
+        headers,
+    }
+    requestOpts = withSecurityOptions(requestOpts, browser)
+    requestOpts.headers = Object.fromEntries(new Headers(requestOpts.headers).entries())
+    return requestOpts
 }

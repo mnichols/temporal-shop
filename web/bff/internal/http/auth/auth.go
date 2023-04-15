@@ -19,6 +19,7 @@ const headerAuthorization = "authorization"
 
 type AuthenticationDetailer interface {
 	SessionID() string
+	Token() string
 }
 type Claims struct {
 	jwt.RegisteredClaims
@@ -31,10 +32,14 @@ type SessionStore interface {
 type Authentication struct {
 	Email     string
 	sessionID *session.ID
+	token     string
 }
 
 func (a *Authentication) SessionID() string {
 	return a.sessionID.String()
+}
+func (a *Authentication) Token() string {
+	return a.token
 }
 
 type Authenticator struct {
@@ -59,6 +64,10 @@ func (a *Authenticator) AuthenticateRequest(r *http.Request) (*Authentication, e
 	if err != nil && errors.Is(err, http.ErrNoCookie) {
 		return nil, AuthenticationFailedError
 	}
+	token, err := ExtractTokenFromRequest(a.encryptionKey)(r)
+	if err != nil && errors.Is(err, http.ErrNoCookie) {
+		return nil, AuthenticationFailedError
+	}
 	// TODO move this id creation to a higher middleware
 	id, err := session.NewID([]byte(a.encryptionKey), a.associatedData, &values.SessionID{Email: email})
 	if err != nil {
@@ -68,7 +77,7 @@ func (a *Authenticator) AuthenticateRequest(r *http.Request) (*Authentication, e
 	if err != nil {
 		return nil, AuthenticationFailedError
 	}
-	return &Authentication{Email: email, sessionID: id}, nil
+	return &Authentication{Email: email, sessionID: id, token: token}, nil
 }
 func (a *Authenticator) StartSession(ctx context.Context, email string) error {
 	id, err := session.NewID([]byte(a.encryptionKey), a.associatedData, &values.SessionID{Email: email})
@@ -76,8 +85,8 @@ func (a *Authenticator) StartSession(ctx context.Context, email string) error {
 		return err
 	}
 	return a.sessionStore.Start(ctx, &orchestrations.StartShopperRequest{
-		Id:    id.String(),
-		Email: email,
+		ShopperId: id.String(),
+		Email:     email,
 	})
 }
 func (a *Authenticator) GenerateToken(ctx context.Context, email string) (string, error) {
@@ -104,6 +113,14 @@ func (a *Authenticator) generateJWT(_ context.Context, sess *values.SessionID) (
 	}
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return jwtToken, nil
+}
+func ExtractTokenFromRequest(key string) func(r *http.Request) (string, error) {
+	return func(r *http.Request) (string, error) {
+		if authorization := r.Header.Get(headerAuthorization); authorization != "" {
+			return authorization, nil
+		}
+		return "", nil
+	}
 }
 func ExtractEmailFromRequest(key string) func(r *http.Request) (string, error) {
 	return func(r *http.Request) (string, error) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/temporalio/temporal-shop/services/go/internal/grpc"
 	"github.com/temporalio/temporal-shop/services/go/internal/inventory"
+	pubsub "github.com/temporalio/temporal-shop/services/go/internal/pubsub/client"
 	"github.com/temporalio/temporal-shop/services/go/pkg/clients/http"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/inventory"
 	temporal2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
@@ -32,6 +33,7 @@ type appConfig struct {
 	TemporalWorker *temporal_shop.Config
 	HTTPConfig     *http.Config
 	GRPCConfig     *grpc.Config
+	PubSub         *pubsub.Config
 }
 
 func main() {
@@ -62,8 +64,13 @@ func main() {
 		panic(fmt.Sprintf("failed to create grpc client conn %s", err.Error()))
 	}
 
+	pubsubHTTPClient, err := http.NewClient(ctx, http.WithPlugin(http.NewBasicAuth(appCfg.PubSub.Username, appCfg.PubSub.Password)))
+	if err != nil {
+		panic(fmt.Sprintf("failed to create http client %s", err.Error()))
+	}
 	// clients
 	clients := clients.MustGetClients(ctx,
+		clients.WithPubSub(pubsub.NewClient(ctx, pubsub.WithHttpClient(pubsubHTTPClient), pubsub.WithConfig(appCfg.PubSub))),
 		clients.WithTemporal(temporal2.NewClients(ctx,
 			temporal2.WithConfig(appCfg.TemporalClient),
 			temporal2.WithLogger(logger))),
@@ -80,6 +87,7 @@ func main() {
 		ctx,
 		temporal_shop.WithTemporal(clients.Temporal()),
 		temporal_shop.WithInventoryClient(clients.Inventory()),
+		temporal_shop.WithPubSub(clients.PubSub()),
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to create temporal worker: %v", err))

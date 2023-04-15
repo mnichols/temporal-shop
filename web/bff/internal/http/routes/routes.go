@@ -35,6 +35,10 @@ var (
 		Template: uritemplate.MustNew("/gql"),
 		Raw:      "/gql",
 	}
+	AnySubscriptions = Route{
+		Template: uritemplate.MustNew("/sub"),
+		Raw:      "/sub",
+	}
 )
 
 type Route struct {

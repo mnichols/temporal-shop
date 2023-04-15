@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/go-multierror"
+	"github.com/temporalio/temporal-shop/services/go/pkg/clients/http"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/inventory"
 	"github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 
 	"os"
 	"sync"
 
+	pubsub "github.com/temporalio/temporal-shop/services/go/internal/pubsub/client"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 
 	"logur.dev/logur"
@@ -25,6 +27,8 @@ type Clients struct {
 	clientErrors *multierror.Error
 	temporal     *temporal.Clients
 	inventory    *inventory2.Client
+	pubSub       *pubsub.Client
+	http         *http.Client
 }
 
 func (c *Clients) Temporal() *temporal.Clients {
@@ -32,6 +36,9 @@ func (c *Clients) Temporal() *temporal.Clients {
 }
 func (c *Clients) Inventory() *inventory2.Client {
 	return c.inventory
+}
+func (c *Clients) PubSub() *pubsub.Client {
+	return c.pubSub
 }
 
 func (c *Clients) Close() error {

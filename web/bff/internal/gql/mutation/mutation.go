@@ -1,13 +1,29 @@
 package mutation
 
 import (
-	"context"
-	"github.com/temporalio/temporal-shop/web/bff/internal/gql/graph/model"
+	"github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
+	"github.com/temporalio/temporal-shop/web/bff/internal/gql/graph"
+	"github.com/temporalio/temporal-shop/web/bff/internal/gql/pubsub"
 )
 
-type Mutation struct{}
+type Mutation struct {
+	*setCartItems
+	*publishCart
+	temporal  *temporal.Clients
+	query     graph.QueryResolver
+	pubSub    *pubsub.PubSub
+	taskQueue string
+}
 
-func (m Mutation) AddGameToCart(ctx context.Context, input model.CartItem) (*model.Cart, error) {
-	//TODO implement me
-	panic("implement me")
+func NewMutation(opts ...Option) *Mutation {
+	m := &Mutation{}
+	for _, o := range opts {
+		o(m)
+	}
+
+	m.setCartItems = &setCartItems{m.temporal.Client, m.query, m.taskQueue}
+	m.publishCart = &publishCart{
+		pubSub: m.pubSub,
+	}
+	return m
 }

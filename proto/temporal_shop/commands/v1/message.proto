@@ -11,8 +11,20 @@ message PingRequest {
 message PingResponse {
   string name = 1;
 }
+message CallerRequest {
+  string target_activity = 1;
+  string target_task_queue = 2;
+}
+
 message RefreshShopperRequest {
   google.protobuf.Timestamp last_seen_at = 1;
   string email = 2;
   int64 durationSeconds = 3;
 }
+
+message SetCartItemsRequest {
+  string cart_id = 1;
+  map<string, int64> product_ids_to_quantity = 2;
+  CallerRequest caller = 3;
+}
+

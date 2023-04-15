@@ -28,7 +28,7 @@ func (t *TemporalSessionStore) Validate(ctx context.Context, id string) error {
 func (t *TemporalSessionStore) Start(ctx context.Context, params *orchestrations2.StartShopperRequest) error {
 	logger := log.GetLogger(ctx)
 	opts := client.StartWorkflowOptions{
-		ID:        params.Id,
+		ID:        params.ShopperId,
 		TaskQueue: orchestrations.TaskQueueTemporalShop,
 	}
 	run, err := t.temporalClient.ExecuteWorkflow(ctx, opts, orchestrations.TypeOrchestrations.Shopper, params)

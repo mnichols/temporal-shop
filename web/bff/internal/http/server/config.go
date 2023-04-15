@@ -6,6 +6,7 @@ type Config struct {
 	IsServingUI            bool
 	ShowsGraphqlPlayground bool
 	EncryptionKey          string
+	SubscriptionsPort      string
 }
 
 func (c Config) Prefix() string {

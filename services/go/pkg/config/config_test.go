@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -8,6 +9,21 @@ import (
 )
 
 const defaultValue = "blink"
+
+type TestConfigWithOverride struct {
+	CustomThing string
+}
+
+func (c *TestConfigWithOverride) Prefix() string {
+	return "customtype"
+}
+func (c *TestConfigWithOverride) Override() error {
+	fmt.Sprintf("calling override")
+	if c.CustomThing == "" {
+		c.CustomThing = "overriddenvalue"
+	}
+	return nil
+}
 
 type TestConfig struct {
 	UntaggedField             string
@@ -87,4 +103,24 @@ func TestUnmarshalAllWithInnerConfigs(t *testing.T) {
 	// default value
 	A.Equal(defaultValue, cfg.Bonk.FieldWithDefaultValue)
 	A.Equal("wink", cfg.Bonk.UntaggedField)
+}
+func TestOverride(t *testing.T) {
+
+	os.Setenv("CUSTOMTYPE_CUSTOM_THING", "myenvvalue")
+
+	A := assert.New(t)
+	cfg := TestConfigWithOverride{}
+	_, err := UnmarshalConfig(&cfg)
+	A.NoError(err)
+	A.Equal("myenvvalue", cfg.CustomThing)
+
+}
+
+func TestOverrideWithNoEnvValue(t *testing.T) {
+	A := assert.New(t)
+	cfg := TestConfigWithOverride{}
+	_, err := UnmarshalConfig(&cfg)
+	A.NoError(err)
+	A.Equal("overriddenvalue", cfg.CustomThing)
+
 }

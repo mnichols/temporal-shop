@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
+	"github.com/temporalio/temporal-shop/api/temporal_shop/values/v1"
 	"github.com/temporalio/temporal-shop/services/go/pkg/orchestrations"
 	"github.com/temporalio/temporal-shop/web/bff/internal/gql/graph/model"
 	"go.temporal.io/api/serviceerror"
@@ -30,7 +31,7 @@ func Test_Inventory(t *testing.T) {
 	inventoryID := cuid.New()
 	email := "me@example.org"
 	queryType := orchestrations.QueryName(&queries.GetInventoryRequest{})
-	simpleInventory := &queries.GetInventoryResponse{Games: []*queries.Game{
+	simpleInventory := &queries.GetInventoryResponse{Games: []*values.Game{
 		{
 			Id: cuid.New(),
 		},

@@ -2,6 +2,8 @@ package log
 
 import (
 	"context"
+	"go.uber.org/zap/zapcore"
+	"os"
 	"strings"
 
 	"go.uber.org/zap"
@@ -23,20 +25,42 @@ const (
 )
 
 func NewLogger(ctx context.Context, cfg *Config, opts ...zap.Option) (logur.Logger, error) {
+	opts = append(opts, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 
-	inner, err := zap.NewDevelopment()
-	if err != nil {
-		return nil, err
-	}
 	if !strings.Contains(strings.ToLower(cfg.Environment), "dev") {
-		inner, err = zap.NewProduction()
+		l, err := zap.NewProduction(opts...)
 		if err != nil {
 			return nil, err
 		}
+		defer l.Sync()
+		return zapadapter.New(l), nil
 	}
+	var core zapcore.Core
+	// First, define our level-handling logic.
+	highPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl >= zapcore.ErrorLevel
+	})
+	lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl < zapcore.ErrorLevel
+	})
+	// High-priority output should also go to standard error, and low-priority
+	// output should also go to standard out.
+	consoleDebugging := zapcore.Lock(os.Stdout)
+	consoleErrors := zapcore.Lock(os.Stderr)
 
-	inner = inner.WithOptions(opts...)
-	return zapadapter.New(inner), nil
+	opts = append(opts, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+
+	consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+	// Join the outputs, encoders, and level-handling functions into
+	// zapcore.Cores, then tee the four cores together.
+	core = zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, consoleErrors, highPriority),
+		zapcore.NewCore(consoleEncoder, consoleDebugging, lowPriority),
+	)
+	logger := zap.New(core)
+	logger.WithOptions(opts...)
+	defer logger.Sync()
+	return zapadapter.New(logger), nil
 }
 
 func WithLogger(ctx context.Context, logger logur.Logger) context.Context {

@@ -6,3 +6,10 @@ option go_package = "github.com/temporalio/temporal-shop/api/temporal_shop/value
 message SessionID {
   string email = 1;
 }
+message Game {
+  string id = 1;
+  string title = 2;
+  string category = 3;
+  string image_url = 4;
+  int64 price_cents = 5;
+}

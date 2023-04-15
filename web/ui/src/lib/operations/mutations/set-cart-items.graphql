@@ -1,0 +1,19 @@
+mutation SetCartItems($input: SetCartItemsInput!) {
+    setCartItems(input: $input) {
+        id,
+        shopperId,
+        items {
+            productId,
+            quantity,
+            price,
+            subtotal,
+            title,
+            category,
+        },
+        subtotal,
+        total,
+        taxRate,
+        tax,
+        timestamp,
+    }
+}

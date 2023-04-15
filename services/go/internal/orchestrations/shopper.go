@@ -7,6 +7,8 @@ import (
 	orchestrations2 "github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1"
 	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
+	"github.com/temporalio/temporal-shop/services/go/internal/shopping"
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/workflow"
 	"time"
@@ -77,11 +79,18 @@ func (u *ExpiringSession) SleepUntil(
 }
 
 func (w *Orchestrations) Shopper(ctx workflow.Context, params *orchestrations2.StartShopperRequest) error {
+	if params == nil {
+		return fmt.Errorf("params are required")
+	}
+	/* TODO explicit validation function */
 	if params.DurationSeconds == 0 {
 		params.DurationSeconds = SessionMinSeconds
 	}
 	if params.InventoryId == "" {
-		params.InventoryId = inventory2.InventorySessionID(params.Id)
+		params.InventoryId = inventory2.InventorySessionID(params.ShopperId)
+	}
+	if params.CartId == "" {
+		params.CartId = shopping.CartID(params.ShopperId)
 	}
 	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 3,
@@ -90,56 +99,87 @@ func (w *Orchestrations) Shopper(ctx workflow.Context, params *orchestrations2.S
 	logger.Info("started shopper")
 
 	state := &queries.GetShopperResponse{
-		ShopperId:   params.Id,
+		ShopperId:   params.ShopperId,
 		Email:       params.Email,
 		InventoryId: params.InventoryId,
+		CartId:      params.CartId,
 	}
 
 	if err := setupQueries(ctx, state); err != nil {
 		return err
 	}
 
-	inventoryFuture, _ := prepareInventory(ctx, params, state, logger)
+	inventoryFuture, _ := allocateInventory(ctx, params, state, logger)
+	cartFuture, _ := startShoppingCart(ctx, params, state, logger)
 
 	if err := keepShopping(ctx, params, logger); err != nil {
+		// the `ContinueAsNew` error could appear here which would early return, hence
+		// keeping our "cart" and "inventory" workflows running (since we used ParentClosePolicy.Abandon)
 		if !errors.Is(err, workflow.ErrCanceled) {
 			return err
 		}
 	}
 	logger.Info("canceling inventory")
-
 	if err := workflow.RequestCancelExternalWorkflow(ctx, params.InventoryId, "").Get(ctx, nil); err != nil {
 		logger.Error("failure to cancel inventory", "err", err)
 	}
 	if err := inventoryFuture.Get(ctx, nil); err != nil {
 		logger.Error("inventory cancel failure", "err", err)
 	}
-	//cancelInventory()
-	logger.Info("session timed out and inventory canceled")
+	logger.Info("canceling cart")
+	if err := workflow.RequestCancelExternalWorkflow(ctx, params.CartId, "").Get(ctx, nil); err != nil {
+		logger.Error("failure to cancel cart", "err", err)
+	}
+	if err := cartFuture.Get(ctx, nil); err != nil {
+		logger.Error("cart cancel failure", "err", err)
+	}
+	logger.Info("session timed out. inventory and cart canceled")
 	return nil
 }
 
-func prepareInventory(
+func allocateInventory(
 	ctx workflow.Context,
 	params *orchestrations2.StartShopperRequest,
 	state *queries.GetShopperResponse,
 	logger log.Logger,
 ) (workflow.ChildWorkflowFuture, workflow.CancelFunc) {
-	cctx, cancelInventory := workflow.WithCancel(workflow.WithChildOptions(ctx, workflow.ChildWorkflowOptions{
+	cctx, cancel := workflow.WithCancel(workflow.WithChildOptions(ctx, workflow.ChildWorkflowOptions{
 		WorkflowID:          state.InventoryId,
 		WaitForCancellation: true,
+		// we don't want inventory to go away after a ContinueAsNew
+		ParentClosePolicy: enums.PARENT_CLOSE_POLICY_ABANDON,
 	}))
 
-	f := workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.CreateInventory, &orchestrations2.CreateInventoryRequest{
-		Email: params.Email,
-		Id:    state.InventoryId,
+	f := workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.Inventory, &orchestrations2.AllocateInventoryRequest{
+		Email:       params.Email,
+		InventoryId: state.InventoryId,
 	})
-	logger.Debug("inventory created", "inv")
-	return f, cancelInventory
+	return f, cancel
 }
+func startShoppingCart(
+	ctx workflow.Context,
+	params *orchestrations2.StartShopperRequest,
+	state *queries.GetShopperResponse,
+	logger log.Logger,
+) (workflow.ChildWorkflowFuture, workflow.CancelFunc) {
+	cctx, cancel := workflow.WithCancel(workflow.WithChildOptions(ctx, workflow.ChildWorkflowOptions{
+		WorkflowID:          params.CartId,
+		WaitForCancellation: true,
+		// we don't want cart to go away after a ContinueAsNew
+		ParentClosePolicy: enums.PARENT_CLOSE_POLICY_ABANDON,
+	}))
 
+	f := workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.Cart, &orchestrations2.StartShoppingCartRequest{
+		Email:     params.Email,
+		CartId:    params.CartId,
+		ShopperId: params.ShopperId,
+	})
+	return f, cancel
+}
 func keepShopping(ctx workflow.Context, params *orchestrations2.StartShopperRequest, logger log.Logger) error {
-	expSess := &ExpiringSession{}
+	expSess := &ExpiringSession{
+		params: params,
+	}
 	if err := expSess.SleepUntil(
 		ctx,
 		time.Second*time.Duration(params.DurationSeconds),

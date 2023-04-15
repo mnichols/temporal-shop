@@ -33,3 +33,7 @@ func (m *mockAuth) SessionID() string {
 	a := m.Called()
 	return a.String(0)
 }
+func (m *mockAuth) Token() string {
+	a := m.Called()
+	return a.String(0)
+}

@@ -11,3 +11,4 @@ var NewClients = temporalClient.NewClients
 var WithConfig = temporalClient.WithConfig
 var WithLogger = temporalClient.WithLogger
 var WithOptions = temporalClient.WithOptions
+var GetIdentity = temporalClient.GetIdentity

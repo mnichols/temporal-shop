@@ -7,6 +7,8 @@ import (
 	"github.com/temporalio/temporal-shop/services/go/internal/admin"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/internal/orchestrations"
+	pubsubClient "github.com/temporalio/temporal-shop/services/go/internal/pubsub/client"
+
 	invClient "github.com/temporalio/temporal-shop/services/go/pkg/clients/inventory"
 	temporalClient "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
 
@@ -32,6 +34,11 @@ func WithInventoryClient(c *invClient.Client) Option {
 		w.inventoryClient = c
 	}
 }
+func WithPubSub(p *pubsubClient.Client) Option {
+	return func(w *Worker) {
+		w.pubSub = p
+	}
+}
 
 type Config struct{}
 
@@ -39,6 +46,7 @@ type Worker struct {
 	temporalClients *temporalClient.Clients
 	inner           worker.Worker
 	inventoryClient inventory.InventoryServiceClient
+	pubSub          *pubsubClient.Client
 
 	// other clients
 }
@@ -59,9 +67,11 @@ func (w *Worker) register(inner worker.Worker) error {
 	inventory := inventory2.NewHandlers(w.inventoryClient)
 	inner.RegisterActivity(inventory)
 	inner.RegisterActivity(admin)
+
 	inner.RegisterWorkflow(wfs.Ping)
 	inner.RegisterWorkflow(wfs.Shopper)
-	inner.RegisterWorkflow(wfs.CreateInventory)
+	inner.RegisterWorkflow(wfs.Inventory)
+	inner.RegisterWorkflow(wfs.Cart)
 	return nil
 }
 func (w *Worker) Start(ctx context.Context) error {

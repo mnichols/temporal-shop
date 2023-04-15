@@ -3,12 +3,11 @@ import type {CodegenConfig} from '@graphql-codegen/cli'
 import {writeFileSync} from 'fs'
 
 const config: CodegenConfig = {
-    schema: '../../graphql/schema.graphqls',
-    documents: ['src/**/*.svelte'],
+    schema: '../../graphql/schema.graphql',
+    documents: ['src/**/*.svelte', 'src/lib/operations/**/*.graphql'],
     ignoreNoDocuments: true,
     generates: {
-        './src/gql/': {
-            preset: 'client-preset',
+        './src/gql/index.ts': {
             plugins: ['typescript','typescript-operations','typed-document-node'],
             config: {
                 useTypeImports: true

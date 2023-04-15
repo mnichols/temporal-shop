@@ -7,7 +7,10 @@ import (
 	"github.com/temporalio/temporal-shop/web/bff/build"
 	"github.com/temporalio/temporal-shop/web/bff/internal/clients"
 	temporalClient "github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
+	"github.com/temporalio/temporal-shop/web/bff/internal/gql/pubsub"
 	httpServer "github.com/temporalio/temporal-shop/web/bff/internal/http/server"
+	temporal_shop "github.com/temporalio/temporal-shop/web/bff/internal/workers/temporal"
+	sdkclient "go.temporal.io/sdk/client"
 	"os"
 	"os/signal"
 	"syscall"
@@ -26,6 +29,7 @@ type appConfig struct {
 	Log            *log.Config
 	HttpServer     *httpServer.Config
 	TemporalClient *temporalClient.Config
+	TemporalShop   *temporal_shop.Config
 }
 
 func main() {
@@ -36,7 +40,6 @@ func main() {
 
 	appCfg := &appConfig{}
 	config.MustUnmarshalAll(appCfg)
-
 	var g *errgroup.Group
 	g, ctx = errgroup.WithContext(ctx)
 
@@ -62,6 +65,9 @@ func main() {
 	clients := clients.MustGetClients(ctx,
 		clients.WithTemporal(temporalClient.NewClients(ctx,
 			temporalClient.WithConfig(appCfg.TemporalClient),
+			temporalClient.WithOptions(sdkclient.Options{
+				Identity: temporalClient.GetIdentity(""),
+			}),
 			temporalClient.WithLogger(logger))),
 	)
 	defer func() {
@@ -69,17 +75,30 @@ func main() {
 			logger.Error("failed to close clients gracefully", logur.Fields{"err": perr})
 		}
 	}()
+	pbsb := pubsub.NewPubSub()
+
 	// apps
 	hs, err := httpServer.NewServer(ctx,
 		httpServer.WithConfig(appCfg.HttpServer),
 		httpServer.WithTemporalClients(clients.Temporal()),
+		httpServer.WithPubSub(pbsb),
 		httpServer.WithLogger(logger),
+		httpServer.WithTaskQueue(appCfg.TemporalShop.TaskQueue),
 	)
 	if err != nil {
 		panic("failed to create http server: " + err.Error())
 	}
 
-	startables := []startable{hs}
+	tw, err := temporal_shop.NewWorker(
+		ctx,
+		temporal_shop.WithTemporal(clients.Temporal()),
+		temporal_shop.WithPubSub(pbsb),
+		temporal_shop.WithConfig(appCfg.TemporalShop),
+	)
+	if err != nil {
+		panic("failed to start temporal_shop worker: " + err.Error())
+	}
+	startables := []startable{hs, tw}
 
 	for _, s := range startables {
 		var current = s

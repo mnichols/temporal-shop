@@ -8,6 +8,7 @@ import (
 	"github.com/temporalio/temporal-shop/services/go/pkg/session"
 	temporalClient "github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
 	"github.com/temporalio/temporal-shop/web/bff/internal/gql"
+	"github.com/temporalio/temporal-shop/web/bff/internal/gql/pubsub"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/api"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/app"
 	"github.com/temporalio/temporal-shop/web/bff/internal/http/auth"
@@ -22,6 +23,9 @@ import (
 	"net/http/httputil"
 )
 
+type Closeable interface {
+	Close() error
+}
 type Server struct {
 	temporal      *temporalClient.Clients
 	logger        logur.Logger
@@ -30,6 +34,9 @@ type Server struct {
 	inner         *http.Server
 	errors        *multierror.Error
 	authenticator *auth.Authenticator
+	closeables    []Closeable
+	pubSub        *pubsub.PubSub
+	taskQueue     string
 }
 
 // NewServer creates a new server with options
@@ -42,7 +49,8 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 	opts = append(defaultOpts, opts...)
 
 	s := &Server{
-		errors: &multierror.Error{},
+		errors:     &multierror.Error{},
+		closeables: make([]Closeable, 0),
 	}
 
 	for _, o := range opts {
@@ -65,8 +73,8 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 		AllowedOrigins: []string{"http://*", "https://*"},
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Connection"},
+		ExposedHeaders:   []string{"Link", "Connection", "Cache-Control", "Content-Type"},
 		AllowCredentials: true,
 		Debug:            true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
@@ -130,12 +138,17 @@ func (s *Server) buildApiRouter(r chi.Router) chi.Router {
 		s.appendError(err)
 		return nil
 	}
-	gqlHandlers, err := gql.NewHandlers(gql.WithTemporal(s.temporal))
+	gqlHandlers, err := gql.NewHandlers(
+		gql.WithTemporal(s.temporal),
+		gql.WithPubSub(s.pubSub),
+		gql.WithTaskQueue(s.taskQueue),
+	)
 	if err != nil {
 		s.appendError(err)
 		return nil
 	}
 
+	s.closeables = append(s.closeables, gqlHandlers)
 	// public api
 	r = r.Group(func(r chi.Router) {
 		r.Post(routes.POSTLogin.Raw, loginHandlers.POST)
@@ -143,6 +156,7 @@ func (s *Server) buildApiRouter(r chi.Router) chi.Router {
 			r.Get(routes.GETGqlPlayground.Raw, gqlHandlers.Playground)
 			r.Post(routes.POSTGql.Raw, gqlHandlers.Handler)
 		}
+
 	})
 	// secure api
 	r = r.Group(func(r chi.Router) {
@@ -150,6 +164,9 @@ func (s *Server) buildApiRouter(r chi.Router) chi.Router {
 		r.Get(routes.GETApi.Raw, apiHandlers.GET)
 		if !s.cfg.ShowsGraphqlPlayground {
 			r.Post(routes.POSTGql.Raw, gqlHandlers.Handler)
+		}
+		if s.cfg.SubscriptionsPort == s.cfg.Port {
+			r.Handle(routes.AnySubscriptions.Raw, gqlHandlers.Subscriptions)
 		}
 	})
 	return r
@@ -160,7 +177,8 @@ func (s *Server) Start(ctx context.Context) error {
 	log.GetLogger(ctx).Info("starting http server", log.Fields{
 		"port": s.cfg.Port,
 	})
-	return s.inner.ListenAndServe()
+
+	return s.inner.ListenAndServeTLS("/Users/mnichols/certs/localhost/server.crt", "/Users/mnichols/certs/localhost/server.key")
 }
 func (s *Server) Shutdown(ctx context.Context) {
 	if err := s.inner.Shutdown(ctx); err != nil {

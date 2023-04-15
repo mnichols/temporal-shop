@@ -43,23 +43,36 @@ func (s *ShopperTestSuite) AfterTest(suiteName, testName string) {
 	s.env.AssertExpectations(s.T())
 }
 
-func (s *ShopperTestSuite) Test_StartShopperSession_CreatesInventory() {
-	s.env.RegisterWorkflow(TypeOrchestrations.CreateInventory)
+func (s *ShopperTestSuite) Test_StartShopperSession_SpawnsInventoryAndCart() {
+	s.env.RegisterWorkflow(TypeOrchestrations.Inventory)
+	s.env.RegisterWorkflow(TypeOrchestrations.Cart)
 	params := &orchestrations2.StartShopperRequest{
-		Id:              cuid.New(),
+		ShopperId:       cuid.New(),
 		Email:           cuid.New(),
 		InventoryId:     cuid.New(),
+		CartId:          cuid.New(),
 		DurationSeconds: int64(1 * time.Second),
 	}
 	s.env.OnWorkflow(
-		TypeOrchestrations.CreateInventory,
+		TypeOrchestrations.Inventory,
 		mock.Anything,
-		&orchestrations2.CreateInventoryRequest{
-			Id:    params.InventoryId,
-			Email: params.Email,
+		&orchestrations2.AllocateInventoryRequest{
+			InventoryId: params.InventoryId,
+			Email:       params.Email,
+		},
+	).Return(nil)
+	s.env.OnWorkflow(
+		TypeOrchestrations.Cart,
+		mock.Anything,
+		&orchestrations2.StartShoppingCartRequest{
+			CartId:    params.CartId,
+			Email:     params.Email,
+			ShopperId: params.ShopperId,
 		},
 	).Return(nil)
 	s.env.OnRequestCancelExternalWorkflow(mock.Anything, params.InventoryId, "").Return(nil)
+	s.env.OnRequestCancelExternalWorkflow(mock.Anything, params.CartId, "").Return(nil)
+
 	s.env.RegisterDelayedCallback(func() {
 		s.env.CancelWorkflow()
 	}, time.Second*1)
@@ -68,36 +81,59 @@ func (s *ShopperTestSuite) Test_StartShopperSession_CreatesInventory() {
 	s.NoError(s.env.GetWorkflowError())
 }
 func (s *ShopperTestSuite) Test_StartShopperSession_IsRefreshable_And_Cancelable() {
-	s.env.RegisterWorkflow(TypeOrchestrations.CreateInventory)
+	s.env.RegisterWorkflow(TypeOrchestrations.Inventory)
+	s.env.RegisterWorkflow(TypeOrchestrations.Cart)
 	params := &orchestrations2.StartShopperRequest{
-		Id:              cuid.New(),
+		ShopperId:       cuid.New(),
 		Email:           cuid.New(),
 		InventoryId:     cuid.New(),
+		CartId:          cuid.New(),
 		DurationSeconds: int64(4 * time.Second),
 	}
-	var canceledInventory *workflow.Info
+	//var canceledInventory *workflow.Info
+	//var canceledCart *workflow.Info
 	var completedInventory *workflow.Info
+	var completedCart *workflow.Info
 
 	s.env.OnWorkflow(
-		TypeOrchestrations.CreateInventory,
+		TypeOrchestrations.Inventory,
 		mock.Anything,
-		&orchestrations2.CreateInventoryRequest{
-			Id:    params.InventoryId,
-			Email: params.Email,
+		&orchestrations2.AllocateInventoryRequest{
+			InventoryId: params.InventoryId,
+			Email:       params.Email,
 		},
 	).Return(nil)
-	// this will not be called because we are mocking out the child workflow execution
-	s.env.SetOnChildWorkflowCanceledListener(func(info *workflow.Info) {
-		s.T().Log("SetOnChildWorkflowCanceledListener called")
-		canceledInventory = info
-	})
+	s.env.OnWorkflow(
+		TypeOrchestrations.Cart,
+		mock.Anything,
+		&orchestrations2.StartShoppingCartRequest{
+			CartId:    params.CartId,
+			ShopperId: params.ShopperId,
+			Email:     params.Email,
+		},
+	).Return(nil)
+	// this block will not be called because we are mocking out the child workflow execution
+	//s.env.SetOnChildWorkflowCanceledListener(func(info *workflow.Info) {
+	//	s.T().Log("SetOnChildWorkflowCanceledListener called")
+	//	if info.WorkflowExecution.ID == params.InventoryId {
+	//		canceledInventory = info
+	//	} else if info.WorkflowExecution.ID == params.CartId {
+	//		canceledCart = info
+	//	}
+	//})
+
 	// this will be called though...seems inconsistent
 	s.env.SetOnChildWorkflowCompletedListener(func(workflowInfo *workflow.Info, result converter.EncodedValue, err error) {
 		s.T().Log("SetOnChildWorkflowCompletedListener called")
-		completedInventory = workflowInfo
+		if workflowInfo.WorkflowExecution.ID == params.InventoryId {
+			completedInventory = workflowInfo
+		} else if workflowInfo.WorkflowExecution.ID == params.CartId {
+			completedCart = workflowInfo
+		}
 	})
 
 	s.env.OnRequestCancelExternalWorkflow(mock.Anything, params.InventoryId, "").Return(nil)
+	s.env.OnRequestCancelExternalWorkflow(mock.Anything, params.CartId, "").Return(nil)
 
 	refreshes := []*commands.RefreshShopperRequest{
 		{DurationSeconds: int64(time.Second * 1)},
@@ -113,29 +149,44 @@ func (s *ShopperTestSuite) Test_StartShopperSession_IsRefreshable_And_Cancelable
 	s.True(s.env.IsWorkflowCompleted())
 
 	s.NoError(s.env.GetWorkflowError())
-	s.NotNil(canceledInventory)
+	// see note above...these will not be set by the canceled listener
+	//s.NotNil(canceledInventory)
+	//s.NotNil(canceledCart)
 	s.NotNil(completedInventory)
+	s.NotNil(completedCart)
 }
 func (s *ShopperTestSuite) Test_StartShopperSession_ContinuesAsNewAfterThresholdMet() {
 	s.env.SetTestTimeout(time.Second * 5)
-	s.env.RegisterWorkflow(TypeOrchestrations.CreateInventory)
+	s.env.RegisterWorkflow(TypeOrchestrations.Inventory)
+	s.env.RegisterWorkflow(TypeOrchestrations.Cart)
 	params := &orchestrations2.StartShopperRequest{
-		Id:              cuid.New(),
+		ShopperId:       cuid.New(),
 		Email:           cuid.New(),
 		InventoryId:     cuid.New(),
 		DurationSeconds: int64(4 * time.Second),
 	}
 
 	s.env.OnWorkflow(
-		TypeOrchestrations.CreateInventory,
+		TypeOrchestrations.Inventory,
 		mock.Anything,
-		&orchestrations2.CreateInventoryRequest{
-			Id:    params.InventoryId,
-			Email: params.Email,
+		&orchestrations2.AllocateInventoryRequest{
+			InventoryId: params.InventoryId,
+			Email:       params.Email,
+		},
+	).Return(nil)
+	s.env.OnWorkflow(
+		TypeOrchestrations.Cart,
+		mock.Anything,
+		&orchestrations2.StartShoppingCartRequest{
+			CartId:    params.CartId,
+			ShopperId: params.ShopperId,
+			Email:     params.Email,
 		},
 	).Return(nil)
 
-	s.env.OnRequestCancelExternalWorkflow(mock.Anything, params.InventoryId, "").Never() //Return(nil)
+	// never cancel the children
+	s.env.OnRequestCancelExternalWorkflow(mock.Anything, params.InventoryId, "").Never()
+	s.env.OnRequestCancelExternalWorkflow(mock.Anything, params.CartId, "").Never()
 
 	s.env.RegisterDelayedCallback(func() {
 		// send up to the threshold

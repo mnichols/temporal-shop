@@ -1,0 +1,5 @@
+mutation PublishCart($input: PublishCartInput!) {
+    publishCart(input: $input) {
+        id,
+    }
+}

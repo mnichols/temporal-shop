@@ -1,0 +1,4 @@
+{
+	"query":"mutation($input: PublishCartInput!){publishCart(input:$input){ id }}",
+	"variables": {"input": {"id": "123", "shopperId": "456", "items": []}}
+}

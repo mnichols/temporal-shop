@@ -26,7 +26,8 @@ genapi:
 
 gengql:
 	@cd web/ui; npm run codegen
-	@cd web/bff/internal/gql; go run github.com/99designs/gqlgen generate
+	@cd web/bff/internal/gql; go run github.com/99designs/gqlgen --config gqlgen.yml generate
+	#@cd services/go/internal/pubsub; go run github.com/Khan/genqlient ./genqlient.yaml
 
 test:
 	go test -race -timeout=5m -cover -count=1  ./...
@@ -36,3 +37,7 @@ clean:
 
 lint:
 	golangci-lint run ./web
+
+login:
+	JWT = $(http --verify=no https://localhost:8080/api/login email=mike.nichols@temporal.io | jq -r .token)
+	echo ${JWT}

@@ -6,8 +6,10 @@ import (
 	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/services/go/pkg/orchestrations"
+	"github.com/temporalio/temporal-shop/web/bff/internal/gql/format"
 	"github.com/temporalio/temporal-shop/web/bff/internal/gql/graph/model"
 	sdkclient "go.temporal.io/sdk/client"
+	"sort"
 )
 
 type inventory struct {
@@ -20,10 +22,10 @@ func inventoryFromProto(in *queries.GetInventoryResponse) *model.Inventory {
 	for _, g := range in.Games {
 		out.Games = append(out.Games, &model.Game{
 			ID:       g.Id,
-			Product:  g.Product,
+			Title:    g.Title,
 			Category: g.Category,
 			ImageURL: g.ImageUrl,
-			Price:    g.Price,
+			Price:    fmt.Sprintf("%d", g.PriceCents/100),
 		})
 	}
 	return out
@@ -47,19 +49,27 @@ func (q *inventory) Inventory(ctx context.Context, input *model.InventoryInput) 
 		return nil, fmt.Errorf("failed to get inventory values %w", ierr)
 	}
 	var games []*model.Game
+	categories := make(map[string]interface{})
 	for _, g := range response.Games {
-		if (input == nil || input.CategoryID == nil) || (input != nil && input.CategoryID != nil && *input.CategoryID == g.Category) {
+		categories[g.Category] = struct{}{}
+		if (input == nil || input.Category == nil) || (input != nil && input.Category != nil && *input.Category == g.Category) {
 			games = append(games, &model.Game{
 				ID:       g.Id,
-				Product:  g.Product,
+				Title:    g.Title,
 				Category: g.Category,
 				ImageURL: g.ImageUrl,
-				Price:    g.Price,
+				Price:    format.CentsToDollars(g.PriceCents),
 			})
 		}
 	}
+	catSlice := []string{}
+	for k := range categories {
+		catSlice = append(catSlice, k)
+	}
+	sort.Strings(catSlice)
 
 	return &model.Inventory{
-		Games: games,
+		Games:      games,
+		Categories: catSlice,
 	}, nil
 }

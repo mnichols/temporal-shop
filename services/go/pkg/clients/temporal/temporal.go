@@ -7,7 +7,13 @@ import (
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	sdkclient "go.temporal.io/sdk/client"
 	"logur.dev/logur"
+	"os"
 )
+
+func GetIdentity(taskQueue string) string {
+	return fmt.Sprintf("%d@%s@%s", os.Getpid(), getHostName(), taskQueue)
+
+}
 
 type Clients struct {
 	Client          sdkclient.Client
@@ -25,6 +31,14 @@ func (c *Clients) Close() error {
 		c.NamespaceClient.Close()
 	}
 	return nil
+}
+
+func getHostName() string {
+	hostName, err := os.Hostname()
+	if err != nil {
+		hostName = "Unknown"
+	}
+	return hostName
 }
 
 // NewClients creates the temporal and temporalNamespace clients
@@ -54,6 +68,11 @@ func NewClients(ctx context.Context, opts ...Option) (*Clients, error) {
 	if result.ClientOptions.Namespace == "" {
 		result.ClientOptions.Namespace = result.Config.Namespace
 	}
+	if result.ClientOptions.Identity == "" {
+		// same behavior as SDK
+		result.ClientOptions.Identity = GetIdentity("")
+	}
+
 	if result.Config.CertFilePath != "" && result.Config.KeyFilePath != "" {
 		var err error
 		logger.Info("configuring tls", map[string]interface{}{

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package temporal_shop.queries.v1;
 option go_package = "github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1;queries";
+import "temporal_shop/values/v1/message.proto";
 
 message GetShopperRequest {
   string shopper_id = 1;
@@ -10,19 +11,28 @@ message GetShopperResponse {
   string shopper_id = 1;
   string email = 2;
   string inventory_id = 3;
+  string cart_id = 4;
 }
 
-message Game {
-  string id = 1;
-  string product = 2;
-  string category = 3;
-  string image_url = 4;
-  string price = 5;
-}
 message GetInventoryRequest {
   string inventory_id = 1;
 }
 message GetInventoryResponse {
   string inventory_id = 1;
-  repeated Game games = 2;
+  repeated temporal_shop.values.v1.Game games = 2;
+}
+
+message GetCartRequest {
+  string cart_id = 1;
+}
+
+message GetCartResponse {
+  string cart_id = 1;
+  string shopper_id = 2;
+  int64 subtotal_cents = 3;
+  int64 tax_cents = 4;
+  int64 tax_rate_bps = 5;
+  int64 total_cents = 6;
+  map<string, int64> product_id_to_quantity = 7;
+  map<string, temporal_shop.values.v1.Game> product_id_to_game = 8;
 }

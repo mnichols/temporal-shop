@@ -11,3 +11,4 @@ var TypeOrchestrations = orchestrations.TypeOrchestrations
 var TaskQueueTemporalShop = temporal_shop.TaskQueueTemporalShop
 var SignalName = orchestrations.SignalName
 var QueryName = orchestrations.QueryName
+var ActivityName = orchestrations.ActivityName
