@@ -18,14 +18,16 @@ type inventory struct {
 }
 
 func inventoryFromProto(in *queries.GetInventoryResponse) *model.Inventory {
-	out := &model.Inventory{}
+	out := &model.Inventory{
+		Categories: []string{""},
+	}
 	for _, g := range in.Games {
 		out.Games = append(out.Games, &model.Game{
 			ID:       g.Id,
 			Title:    g.Title,
 			Category: g.Category,
 			ImageURL: g.ImageUrl,
-			Price:    fmt.Sprintf("%d", g.PriceCents/100),
+			Price:    format.CentsToDollars(g.PriceCents),
 		})
 	}
 	return out

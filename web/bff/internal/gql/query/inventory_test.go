@@ -70,13 +70,21 @@ func Test_Inventory(t *testing.T) {
 			expect:    nil,
 			queryErr:  &serviceerror.NotFound{},
 			expectErr: &serviceerror.NotFound{},
+			shopper: &model.Shopper{
+				ID:          id,
+				Email:       email,
+				InventoryID: inventoryID,
+			},
 		},
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			A := assert.New(t)
 			mc := &mocks.Client{}
-			ev := &mockEncodedValue{value: &queries.GetInventoryResponse{Games: tt.response.Games}}
+			var ev *mockEncodedValue
+			if tt.response != nil {
+				ev = &mockEncodedValue{value: &queries.GetInventoryResponse{Games: tt.response.Games}}
+			}
 			ms := &mockShopper{}
 			mc.On("QueryWorkflow", mock.Anything, inventoryID, "", queryType).Return(ev, tt.queryErr)
 			sut := inventory{temporal: mc, shopper: ms.Shopper}
