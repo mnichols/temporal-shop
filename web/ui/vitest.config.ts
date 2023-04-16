@@ -10,6 +10,7 @@ export default defineConfig({
       $lib: path.resolve(__dirname, './src/lib'),
       $gql: path.resolve(__dirname, './src/gql'),
       $types: path.resolve(__dirname, './src/types'),
+      $log: path.resolve(__dirname, './src/lib/log'),
       $components: path.resolve(__dirname, './src/lib/components/'),
       $app: path.resolve(__dirname, './src/lib/svelte-mocks/app/'),
       $fixtures: path.resolve(__dirname, './src/fixtures/'),

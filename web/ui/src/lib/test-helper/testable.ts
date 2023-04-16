@@ -1,6 +1,6 @@
 import { subscriptionStore} from '@urql/svelte'
 import type {Client} from "@urql/core";
-import {CartDocument} from "../../../gql";
+import {CartDocument} from "../../gql";
 import {writable} from "svelte/store";
 
 export const createThing = (client: Client) => {

@@ -4,6 +4,7 @@ import type { RequireAtLeastOne} from "type-fest"
 import { parse } from 'uri-template'
 
 import { PUBLIC_API_ROOT_HOST, PUBLIC_API_ROOT_SCHEME } from '$env/static/public'
+import {Logger} from "../log";
 
 export { parse }
 export const csrfCookie = '_csrf'
@@ -46,14 +47,11 @@ export interface RequestOpts  {
 export type APIResponse = {
     response: Response,
 }
-let debugLogger = console.debug.bind(console, 'DEBUG','apiFetch:')
-let noopLogger = (...data: any[]) => {}
 
 export const apiFetch = async <T>(
     url: RequiredTemplatableURL,
     opts: RequestOpts
 ): Promise<APIResponse> => {
-    let log = noopLogger
     let actualURL = ''
     let defaultParams = {
         scheme: PUBLIC_API_ROOT_SCHEME,
@@ -66,10 +64,9 @@ export const apiFetch = async <T>(
     } else if (url.tpl) {
         actualURL = decodeURIComponent(url.tpl.expand(url.params || {}))
     }
-
     const {
         request = fetch,
-        onError = noop(),
+        onError = null,
         isBrowser = browser,
         //headers,
         method = 'GET',
@@ -87,9 +84,12 @@ export const apiFetch = async <T>(
     }
     requestOpts = withSecurityOptions(requestOpts, browser)
     requestOpts.headers = Object.fromEntries(new Headers(requestOpts.headers).entries())
-    log('making request', actualURL, requestOpts)
+    Logger.debug(requestOpts, 'making request to %s', actualURL)
     let res = await request(actualURL, requestOpts)
-    log('received request', actualURL, res.status)
+    Logger.debug('received response [%d] from %s', res?.status,actualURL)
+    if((res.status > 399 && res.status !== 401 && res.status !== 403) && onError) {
+        onError({status: res.status, statusText: res.statusText, body: res.body})
+    }
     return {
         response: res,
     }

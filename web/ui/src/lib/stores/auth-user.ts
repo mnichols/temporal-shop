@@ -7,19 +7,19 @@ babysits the presence of token at localStorage('token')
 import {
     get,
     writable,
-    derived, asyncDerived, asyncReadable,
-} from "@square/svelte-store";
-import type { Writable} from '@square/svelte-store'
+} from "svelte/store";
+import type { Writable} from 'svelte/store'
 import {go} from "$lib/nav";
 import {browser} from "$app/environment";
 import {apiFetch} from "../http";
 const tokenName = 'token'
 import { persisted } from 'svelte-local-storage-store'
-import {Client, getContextClient, gql,  queryStore} from "@urql/svelte";
-import type {UserInput, User, QueryUserArgs, CurrentUserQuery, CurrentUserQueryVariables} from "../../gql";
+import {Client, queryStore} from "@urql/svelte";
+import type {UserInput, CurrentUserQuery, CurrentUserQueryVariables} from "$gql";
 import {CurrentUserDocument} from "$gql";
 import {getContext, setContext} from "svelte";
 import type { OperationResultStore, Pausable, QueryArgs,} from '@urql/svelte'
+import {Logger} from "$log";
 
 const _contextKey = '$$_user'
 
@@ -45,7 +45,8 @@ const loginResponse = writable<LoginResponse | null>()
 if(browser) {
     _tokenStore = persisted(tokenName,undefined)
 }
-_tokenStore.subscribe(t => { console.log('_tokenStore#persisted','write token', t)})
+_tokenStore.subscribe(token => { Logger.debug({token}, '_tokenStore#persisted')})
+// santizeToken is hack to work around some bug that is updating this store with "Bearer"
 const sanitizeToken = (token?: string | null) : string | undefined => {
     if(!token) {
         return undefined
@@ -56,7 +57,6 @@ const sanitizeToken = (token?: string | null) : string | undefined => {
 loginResponse.subscribe(res => {
     if(res?.token) {
         let t = sanitizeToken(res?.token)
-        console.log('_tokenStore.set', t)
         _tokenStore.set(t)
     }
 })
@@ -87,7 +87,7 @@ export const createUserStore = (client: Client, userInput?: UserInput):UserStore
 
 export const doLogin = async (params: LoginRequest) => {
     if(!browser) {
-        console.error('only works in browser')
+        Logger.error('only works in browser')
         return
     }
     // TODO get this url from server
@@ -96,7 +96,7 @@ export const doLogin = async (params: LoginRequest) => {
         body: JSON.stringify(params),
     })
     if(res.response.status > 299) {
-        console.error('failed to login', res.response.status, await res?.response?.text())
+        Logger.error('failed to login [%d]: %s', res?.response?.status, await res?.response?.text())
     }
     let result : LoginResponse = await res.response.json()
     loginResponse.set(result)
@@ -106,7 +106,6 @@ export const goLogin = async () : Promise<void> => {
     if(isLogin()) {
         return
     }
-    console.log('#goLogin')
     return await go('/login')
 }
 export const doLogout = async () => {
@@ -116,7 +115,6 @@ export const doLogout = async () => {
 export function withAuth (headers: HeadersInit | Headers | Record<string, string>): Headers  {
     let h = new Headers(headers)
     if(h.has('authorization')) {
-        console.log('authorization already here')
         return h
     }
     h.set('authorization', `Bearer ${get(_tokenStore)}`)

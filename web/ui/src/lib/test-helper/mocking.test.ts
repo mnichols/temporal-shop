@@ -1,5 +1,5 @@
 import { createThing } from './testable'
-import {createTestClient} from "./index";
+import {createTestClient} from "../http/urql";
 import {writable} from "svelte/store";
 import {afterEach} from "vitest";
 describe('when mocking', async () => {
@@ -8,7 +8,6 @@ describe('when mocking', async () => {
     })
     it('should call mocked fn', async () => {
         vi.mock('@urql/svelte', async () => {
-            console.log('INSIDE MOCK FUNC')
             let mod = await vi.importActual('@urql/svelte')
             return {
                 ...mod,

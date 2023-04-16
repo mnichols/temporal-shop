@@ -10,18 +10,21 @@ describe('withSecurityOptions', () => {
         const actual = withSecurityOptions({ headers }, true)
 
         let h = new Headers(actual.headers)
-        let ct = h.get('content-type')
 
         expect(h.has('x-foo')).toBeTruthy()
-        expect(ct).toEqual('bar')
+        expect(h.get('x-foo')).toEqual('bar')
     })
 })
 describe('apiFetch', () => {
     const url = '/api'
     const tpl = 'https://demo.tmprl-sa.cloud/myapp/api{?options*}'
     const defaultOpts = {
+        'body': undefined,
         'credentials': 'include',
-        'headers': {},
+        'method': 'GET',
+        'headers': {
+            'content-type': 'application/json',
+        }
     }
     it('should fetch the url', async () => {
         const request = createFetchMock({
@@ -46,6 +49,7 @@ describe('apiFetch', () => {
             status: 200,
             statusText: 'ok',
         })
+        console.log('defaultOpts', defaultOpts)
         await apiFetch({url: tpl, params}, { request })
         expect(request).toHaveBeenCalledWith('https://demo.tmprl-sa.cloud/myapp/api?opt1=foo&opt2=bar', defaultOpts)
     })
@@ -82,22 +86,35 @@ describe('apiFetch', () => {
         await withCookie(`${csrfCookie}=${token}`,  async () => {
             await apiFetch({tpl: parse(tpl), params}, { request })
         })
-        let csrfOpts: any = { headers: {} }
+        let csrfOpts: any = {
+            headers: {
+                'content-type': 'application/json',
+            }
+        }
         csrfOpts.headers[`${csrfHeader.toLowerCase()}`] = token
+
         expect(request).toHaveBeenCalledWith('https://demo.tmprl-sa.cloud/myapp/api?opt1=foo&opt2=bar', {  ...defaultOpts, ...csrfOpts})
     })
     it('should handle errors', async () => {
         let errd: Response
         const request = createFetchMock({
-            body: apiRootResponse,
+            body: Promise.resolve({
+                code: 42,
+                message: 'here is an error',
+                details: ['bonk']
+            }),
             ok: true,
-            status: 200,
+            status: 400,
             statusText: 'ok',
-            onError: (e: Response) => {
+        })
+        await apiFetch({tpl: parse(tpl)}, {
+            request,
+            onError: (e) => {
                 errd = e
             }
         })
-        await apiFetch({tpl: parse(tpl), params}, { request })
+        expect(errd).toBeTruthy()
+        expect(errd.status).to.eql(400)
     })
     it('should return response', async () => {
         const request = createFetchMock({
