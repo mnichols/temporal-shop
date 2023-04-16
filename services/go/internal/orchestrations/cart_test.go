@@ -122,7 +122,7 @@ func (s *CartTestSuite) Test_ClearCartResetsState() {
 		CartId:    cuid.New(),
 	}
 
-	clearCartCommand := &commands.ClearCartRequest{
+	clearCartCommand := &commands.SetCartItemsRequest{
 		CartId: params.CartId,
 	}
 

@@ -113,6 +113,7 @@ func TestOverride(t *testing.T) {
 	_, err := UnmarshalConfig(&cfg)
 	A.NoError(err)
 	A.Equal("myenvvalue", cfg.CustomThing)
+	os.Unsetenv("CUSTOMTYPE_CUSTOM_THING")
 
 }
 
