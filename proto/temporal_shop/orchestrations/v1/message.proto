@@ -28,4 +28,6 @@ message StartShoppingCartRequest {
   string cart_id = 1;
   string shopper_id = 2;
   string email = 3;
+  map<string, int64> product_id_to_quantity = 4;
+
 }
