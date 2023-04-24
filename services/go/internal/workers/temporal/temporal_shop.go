@@ -85,7 +85,9 @@ func (w *Worker) Start(ctx context.Context) error {
 	//}); err != nil {
 	//	logger.Error("namespace already registered", logur.Fields{"namespace": NamespaceMessaging, "err": err})
 	//}
-	inner := worker.New(w.temporalClients.Client, TaskQueueTemporalShop, worker.Options{})
+	inner := worker.New(w.temporalClients.Client, TaskQueueTemporalShop, worker.Options{
+		MaxConcurrentWorkflowTaskPollers: 10,
+	})
 
 	if err := w.register(inner); err != nil {
 		return fmt.Errorf("failed to register workflows/activities: %w", err)

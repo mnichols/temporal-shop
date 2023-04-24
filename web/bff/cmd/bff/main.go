@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/temporalio/temporal-shop/services/go/pkg/config"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/metrics"
 	"github.com/temporalio/temporal-shop/web/bff/build"
 	"github.com/temporalio/temporal-shop/web/bff/internal/clients"
 	temporalClient "github.com/temporalio/temporal-shop/web/bff/internal/clients/temporal"
@@ -30,6 +31,7 @@ type appConfig struct {
 	HttpServer     *httpServer.Config
 	TemporalClient *temporalClient.Config
 	TemporalShop   *temporal_shop.Config
+	Metrics        *metrics.Config
 }
 
 func main() {
@@ -61,12 +63,17 @@ func main() {
 	ctx = log.WithLogger(ctx, logger)
 
 	logger.Info("config", log.Fields{"cfg": appCfg})
+	mts, err := metrics.NewPrometheusScope(ctx, appCfg.Metrics)
+	if err != nil {
+		panic("failed to create metrics: " + err.Error())
+	}
 	// clients
 	clients := clients.MustGetClients(ctx,
 		clients.WithTemporal(temporalClient.NewClients(ctx,
 			temporalClient.WithConfig(appCfg.TemporalClient),
 			temporalClient.WithOptions(sdkclient.Options{
-				Identity: temporalClient.GetIdentity(""),
+				Identity:       temporalClient.GetIdentity(""),
+				MetricsHandler: temporalClient.NewMetricsHandler(mts),
 			}),
 			temporalClient.WithLogger(logger))),
 	)

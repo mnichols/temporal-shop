@@ -12,3 +12,4 @@ var WithConfig = temporalClient.WithConfig
 var WithLogger = temporalClient.WithLogger
 var WithOptions = temporalClient.WithOptions
 var GetIdentity = temporalClient.GetIdentity
+var NewMetricsHandler = temporalClient.NewMetricsHandler

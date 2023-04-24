@@ -64,7 +64,7 @@ func (s *ShopperTestSuite) Test_StartShopperSession_SpawnsInventoryAndCart() {
 	s.env.OnWorkflow(
 		TypeOrchestrations.Cart,
 		mock.Anything,
-		&orchestrations2.StartShoppingCartRequest{
+		&orchestrations2.SetShoppingCartRequest{
 			CartId:    params.CartId,
 			Email:     params.Email,
 			ShopperId: params.ShopperId,
@@ -106,7 +106,7 @@ func (s *ShopperTestSuite) Test_StartShopperSession_IsRefreshable_And_Cancelable
 	s.env.OnWorkflow(
 		TypeOrchestrations.Cart,
 		mock.Anything,
-		&orchestrations2.StartShoppingCartRequest{
+		&orchestrations2.SetShoppingCartRequest{
 			CartId:    params.CartId,
 			ShopperId: params.ShopperId,
 			Email:     params.Email,
@@ -177,7 +177,7 @@ func (s *ShopperTestSuite) Test_StartShopperSession_ContinuesAsNewAfterThreshold
 	s.env.OnWorkflow(
 		TypeOrchestrations.Cart,
 		mock.Anything,
-		&orchestrations2.StartShoppingCartRequest{
+		&orchestrations2.SetShoppingCartRequest{
 			CartId:    params.CartId,
 			ShopperId: params.ShopperId,
 			Email:     params.Email,

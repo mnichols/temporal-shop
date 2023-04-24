@@ -15,80 +15,101 @@ import (
 
 // Cart is an entity workflow for a Shopping Cart
 // TODO guard against signal flood, doing continueAsNew after N signals
-func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.StartShoppingCartRequest) error {
+func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.SetShoppingCartRequest) error {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 2,
 	}
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
-	cart := shopping.NewShoppingCart(shopping.ShoppingCartArgs{
-		ID:         params.CartId,
-		ShopperID:  params.ShopperId,
-		TaxRateBPS: shopping.DefaultTaxRateBPS,
-	})
+	logger := workflow.GetLogger(ctx)
 
 	var err error
-	var state *queries.GetCartResponse
-	state, err = cart.Empty()
-	if err != nil {
-		return err
+	calculateRequest := &commands.CalculateShoppingCartRequest{
+		CartId:               params.CartId,
+		ShopperId:            params.ShopperId,
+		TaxRateBps:           shopping.DefaultTaxRateBPS,
+		ProductIdsToQuantity: params.ProductIdsToQuantity,
+		ProductIdToGame:      map[string]*values.Game{},
 	}
-	// todo decide about payment sealing cart
-	paymentStarted := false
+	var state *queries.GetCartResponse
 	if err = workflow.SetQueryHandler(ctx, QueryName(&queries.GetCartRequest{}), func(req *queries.GetCartRequest) (*queries.GetCartResponse, error) {
 		return state, nil
 	}); err != nil {
 		return fmt.Errorf("failed to setup cart query %w", err)
 	}
 
-	addItemsChan := workflow.GetSignalChannel(ctx, SignalName(&commands.SetCartItemsRequest{}))
-	cartOpsCtx, cancelOps := workflow.WithCancel(ctx)
-	workflow.Go(cartOpsCtx, func(ctx workflow.Context) {
-		// this implementation must take care to use the appropriate context, here the `cartOpsCtx`
-		// or else Temporal will fail with `Trying to block on a coroutine which is already blocked` error.
-		fetchGames := func(pids []string) ([]*values.Game, error) {
-			var res *inventory.GetGamesResponse
-			if err := workflow.ExecuteActivity(ctx, inventory2.TypeHandlers.GetGames, &inventory.GetGamesRequest{
-				Version:           "",
-				IncludeProductIds: pids,
-			}).Get(ctx, &res); err != nil {
-				return nil, err
-			}
-			return res.Games, nil
+	if len(params.ProductIdsToQuantity) > 0 {
+		var res *inventory.GetGamesResponse
+		pids := []string{}
+		for pid := range params.ProductIdsToQuantity {
+			pids = append(pids, pid)
 		}
-		logger := workflow.GetLogger(ctx)
-		for {
-			var callerRequest *commands.CallerRequest
-			sel := workflow.NewSelector(ctx)
-			sel.AddReceive(addItemsChan, func(c workflow.ReceiveChannel, more bool) {
-				cmd := &commands.SetCartItemsRequest{}
-				c.Receive(ctx, &cmd)
-				logger.Info("set items on cart", "cmd", cmd)
-				cart.Append(cmd)
-				callerRequest = cmd.Caller
-			})
-			sel.Select(ctx)
-			state, err = cart.Calculate(fetchGames)
-			// TODO tune retry options on this to be two shots only
-			if callerRequest != nil {
-				logger.Info("publishing to", "tq", callerRequest.TargetTaskQueue)
-				publishCtx := workflow.WithTaskQueue(ctx, callerRequest.TargetTaskQueue)
-				if pubErr := workflow.ExecuteActivity(publishCtx, callerRequest.TargetActivity, state).Get(publishCtx, nil); pubErr != nil {
-					logger.Error("failed to publish", "err", pubErr)
-				}
-			}
-			if err != nil {
-				logger.Error("state calculation failed. canceling ops", "err", err)
-				// todo capture error
-				cancelOps()
-				break
+		if err = workflow.ExecuteActivity(ctx, inventory2.TypeHandlers.GetGames, &inventory.GetGamesRequest{
+			Version:           "",
+			IncludeProductIds: pids,
+		}).Get(ctx, &res); err != nil {
+			return err
+		}
+		for _, g := range res.Games {
+			calculateRequest.ProductIdToGame[g.Id] = g
+		}
+	}
+	lao := workflow.WithLocalActivityOptions(ctx, workflow.LocalActivityOptions{
+		StartToCloseTimeout: 1 * time.Second,
+	})
+	if err = workflow.ExecuteLocalActivity(
+		lao,
+		shopping.TypeHandlers.CalculateShoppingCart,
+		calculateRequest,
+	).Get(ctx, &state); err != nil {
+		return fmt.Errorf("failed to calculate shopping cart %w", err)
+	}
+
+	if params.Topic != nil {
+		logger.Info("publishing to", "tq", params.Topic.TaskQueue, "activity", params.Topic.Activity)
+		publishCtx := workflow.WithTaskQueue(ctx, params.Topic.TaskQueue)
+		if pubErr := workflow.ExecuteActivity(publishCtx, params.Topic.Activity, state).Get(publishCtx, nil); pubErr != nil {
+			logger.Error("failed to publish", "err", pubErr)
+		}
+	}
+
+	setCartItemsCommand := &commands.SetCartItemsRequest{}
+	setItemsChan := workflow.GetSignalChannel(ctx, SignalName(setCartItemsCommand))
+	setItemsChan.Receive(ctx, &setCartItemsCommand)
+	logger.Info("set items on cart", "setCartItemsCommand", setCartItemsCommand)
+
+	nextRunParams := &orchestrations.SetShoppingCartRequest{
+		CartId:               params.CartId,
+		ShopperId:            params.ShopperId,
+		Email:                params.Email,
+		ProductIdsToQuantity: setCartItemsCommand.ProductIdsToQuantity,
+	}
+	if setCartItemsCommand.Caller != nil {
+		nextRunParams.Topic = &values.Topic{
+			TaskQueue: setCartItemsCommand.Caller.TargetTaskQueue,
+			Activity:  setCartItemsCommand.Caller.TargetActivity,
+		}
+	}
+	// Drain signal channel asynchronously to avoid signal loss
+	for {
+		var signalVal string
+		ok := setItemsChan.ReceiveAsync(&signalVal)
+		if !ok {
+			break
+		}
+		logger.Info("async receipt of signal")
+		nextRunParams = &orchestrations.SetShoppingCartRequest{
+			CartId:               params.CartId,
+			ShopperId:            params.ShopperId,
+			Email:                params.Email,
+			ProductIdsToQuantity: setCartItemsCommand.ProductIdsToQuantity,
+		}
+		if setCartItemsCommand.Caller != nil {
+			nextRunParams.Topic = &values.Topic{
+				TaskQueue: setCartItemsCommand.Caller.TargetTaskQueue,
+				Activity:  setCartItemsCommand.Caller.TargetActivity,
 			}
 		}
-	})
-	// stayin alive
-	workflow.Await(ctx, func() bool {
-		return paymentStarted || ctx.Err() != nil
-	})
-	cancelOps()
-	return nil
+	}
+	return workflow.NewContinueAsNewError(ctx, TypeOrchestrations.Cart, nextRunParams)
 }

@@ -1,6 +1,7 @@
 package shopping
 
 import (
+	"context"
 	"fmt"
 	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
 	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
@@ -132,4 +133,23 @@ func (c *ShoppingCart) calculate(next *queries.GetCartResponse) (*queries.GetCar
 	next.TotalCents = CalculateTotalCents(next.SubtotalCents, next.TaxRateBps)
 	next.TaxCents = next.TotalCents - next.SubtotalCents
 	return next, nil
+}
+
+func (c *ShoppingCart) Calculate2(ctx context.Context, cmd *commands.CalculateShoppingCartRequest) (*queries.GetCartResponse, error) {
+	state, err := c.Empty()
+	if err != nil {
+		return nil, err
+	}
+
+	for gid, qty := range cmd.ProductIdsToQuantity {
+		if qty > 0 {
+			g, exists := cmd.ProductIdToGame[gid]
+			if !exists {
+				return nil, fmt.Errorf("failed to find game with product id [%s] in collection", gid)
+			}
+			state.ProductIdToGame[g.Id] = g
+			state.ProductIdToQuantity[g.Id] = qty
+		}
+	}
+	return c.calculate(state)
 }
