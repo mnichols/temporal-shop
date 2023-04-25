@@ -2906,28 +2906,28 @@
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
-      },
+      }, 
       {
         "allValue": ".*",
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${Datasource}"
         },
+        "definition": "label_values(workflow_type)",
         "hide": 0,
         "includeAll": true,
-        "multi": false,
+        "multi": true,
         "name": "WorkflowType",
-        "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          }
-        ],
-        "query": "",
+        "options": [],
+        "query": {
+          "query": "label_values(workflow_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
         "skipUrlSync": false,
-        "type": "custom"
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
