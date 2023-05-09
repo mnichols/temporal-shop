@@ -11,7 +11,7 @@ env:
   AWS_ACCOUNT_ID: 429214323166
   CLUSTER_NAME: sa-prod
   GH_ACTIONS_ROLE: arn:aws:iam::429214323166:role/github-actions-role
-  ECR_REPOSITORY: temporal-shop/web
+  #ECR_REPOSITORY: temporal-shop/web
   SLACK_CHANNEL: C038377FSCF #team-gtm
   GOPRIVATE: github.com/temporalio
   SHORT_SHA: $(echo ${{ github.sha }} | cut -c 1-8)
@@ -86,9 +86,32 @@ jobs:
         run: cd web && golangci-lint run
       - name: test
         run: cd web && go test -race -timeout=5m -cover -count=1  ./...
+  domain:
+    needs: [cfg]
+    runs-on: temporal-shop #this should be in the CR created for the runner
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: clone
+        uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.GH_ACTIONS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: asdf
+        id: asdf
+        uses: mnichols/asdf-composite-action@v1
+      - name: dependencies
+        run: cd web && go mod tidy && go mod verify
+      - name: lint
+        run: cd web && golangci-lint run
+      - name: test
+        run: cd services/go && go test -race -timeout=5m -cover -count=1  ./...
   deploy:
     runs-on: temporal-shop #this should be in the CR created for the runner
-    needs: [cfg,ui,bff]
+    needs: [cfg,ui,bff,domain]
     permissions:
       id-token: write
       contents: read
@@ -106,8 +129,8 @@ jobs:
       - name: login to amazon ecr
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      - name: Build, tag, and push to AWS ECR
-        id: build-image
+      - name: BFF_Build_tag_push_to_AWS_ECR
+        id: build-image-bff
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
           image: temporal-shop/web
@@ -116,9 +139,19 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           registry: ${{ steps.login-ecr.outputs.registry }}
           dockerfile: Dockerfile.bff
+      - name: DOMAIN_Build_tag_push_to_AWS_ECR
+        id: build-image-domain
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: temporal-shop/domain
+          addLatest: true
+          # tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          registry: ${{ steps.login-ecr.outputs.registry }}
+          dockerfile: Dockerfile.domain
       - name: split tags
         uses: jungwinter/split@v2
-        id: split
+        id: split-bff
         with:
           separator: ','
           msg: ${{ steps.build-image.outputs.tags }}
@@ -131,13 +164,23 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           CTX=$(kubectl config current-context)
-          IMG=${{ steps.build-image.outputs.imageFullName }}:${{ steps.split.outputs._0 }}
+          IMG=${{ steps.build-image-bff.outputs.imageFullName }}:${{ steps.split-bff.outputs._0 }}
           echo "::notice title={deploying bff bin}::deploying to $CTX => $IMG"
           $(cd kustomize/web/overlays/prod && \
             kustomize edit set image amazonaws.com/web="$IMG")
 
           kustomize build kustomize/web/overlays/prod | kubectl apply -f -
+      - name: deploy domain
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          CTX=$(kubectl config current-context)
+          IMG=${{ steps.build-image-domain.outputs.imageFullName }}:${{ steps.split-domain.outputs._0 }}
+          echo "::notice title={deploying domain bin}::deploying to $CTX => $IMG"
+          $(cd kustomize/domain/overlays/prod && \
+            kustomize edit set image amazonaws.com/domain="$IMG")
 
+          kustomize build kustomize/domain/overlays/prod | kubectl apply -f -
       - name: deploy ui
         run: |
           aws s3 rm --recursive ${{ needs.cfg.outputs.s3-app-dir }}

@@ -10,8 +10,8 @@ ENV GOFLAGS="-mod=readonly"
 WORKDIR /work
 
 # Copy go mod dependencies and build cache
-COPY web/go.mod ./
-COPY web/go.sum ./
+COPY services/go/go.mod ./
+COPY services/go/go.sum ./
 
 RUN go mod download
 
@@ -27,9 +27,9 @@ RUN apk --no-cache upgrade
 RUN apk add --update bash ca-certificates
 
 # Expose port 8080 to the outside world
-EXPOSE 8080
+EXPOSE 9000
 EXPOSE 9090
 
 # this is the `/cmd/gtm/main.go` binary being run
-COPY --from=builder /work/out/bff /usr/local/bin/bff
-CMD ["/usr/local/bin/bff"]
+COPY --from=builder /work/out/domain /usr/local/bin/domain
+CMD ["/usr/local/bin/domain"]
