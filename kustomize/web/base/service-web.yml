@@ -11,5 +11,9 @@ spec:
     - name: http
       port: 80
       targetPort: 8080
+    - port: 9090
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
   selector:
     app: web         # Map any pod with label `app=web` to this service

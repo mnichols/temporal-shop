@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment                 # Type of Kubernetes resource
 metadata:
-  name: web           # Name of the Kubernetes resource
+  name: domain           # Name of the Kubernetes resource
 spec:
   replicas: 3                    # Number of pods to run at any given time
   selector:
     matchLabels:
-      app: web        # This deployment applies to any Pods matching the specified label
+      app: domain        # This deployment applies to any Pods matching the specified label
   template:                      # This deployment will create a set of pods using the configurations in this template
     metadata:
       labels:                    # The labels that will be applied to all of the pods in this deployment
-        app: web
+        app: domain
     spec:                        # Spec for the container which will run in the Pod
       serviceAccountName: temporal-shop
       containers:
-        - name: web
-          image: amazonaws.com/web
+        - name: domain
+          image: amazonaws.com/domain
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
@@ -38,10 +38,12 @@ spec:
                   name: stripe
                   key: secret-key
           ports:
+            - name: grpc
+              containerPort: 9000
+              protocol: TCP
             - name: metrics
               containerPort: 9090
               protocol: TCP
-            - containerPort: 8080  # Should match the port number that the Go application listens on
           resources:
             requests:
               cpu: 100m

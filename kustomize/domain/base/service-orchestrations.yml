@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service                    # Type of kubernetes resource
+metadata:
+  name: orchestrations   # Name of the resource
+  labels:
+    app: orchestrations
+spec:
+  ports:
+    - port: 9090
+      targetPort: metrics
+      protocol: TCP
+      name: metrics

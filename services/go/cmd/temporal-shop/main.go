@@ -67,18 +67,12 @@ func main() {
 		panic(fmt.Sprintf("failed to create grpc client conn %s", err.Error()))
 	}
 
-	pubsubHTTPClient, err := http.NewClient(ctx, http.WithPlugin(http.NewBasicAuth(appCfg.PubSub.Username, appCfg.PubSub.Password)))
-	if err != nil {
-		panic(fmt.Sprintf("failed to create http client %s", err.Error()))
-	}
-
 	mts, err := metrics.NewPrometheusScope(ctx, appCfg.Metrics)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create prometheus scope %s", err.Error()))
 	}
 	// clients
 	clients := clients.MustGetClients(ctx,
-		clients.WithPubSub(pubsub.NewClient(ctx, pubsub.WithHttpClient(pubsubHTTPClient), pubsub.WithConfig(appCfg.PubSub))),
 		clients.WithTemporal(temporal2.NewClients(ctx,
 			temporal2.WithConfig(appCfg.TemporalClient),
 			temporal2.WithOptions(sdkclient.Options{
