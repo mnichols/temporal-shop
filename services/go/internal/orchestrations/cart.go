@@ -73,8 +73,21 @@ func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.SetSh
 	}
 
 	setCartItemsCommand := &commands.SetCartItemsRequest{}
+	cancel := ctx.Done()
 	setItemsChan := workflow.GetSignalChannel(ctx, SignalName(setCartItemsCommand))
-	setItemsChan.Receive(ctx, &setCartItemsCommand)
+	sel := workflow.NewSelector(ctx)
+	sel.AddReceive(setItemsChan, func(c workflow.ReceiveChannel, more bool) {
+		c.Receive(ctx, &setCartItemsCommand)
+	}).AddReceive(cancel, func(c workflow.ReceiveChannel, more bool) {
+		logger.Debug("cart has been canceled", "err", ctx.Err())
+	})
+
+	sel.Select(ctx)
+
+	if ctx.Err() != nil {
+		// cancelation or any other failures should just close our cart down
+		return fmt.Errorf("shutting down cart: %w", ctx.Err())
+	}
 	logger.Info("set items on cart", "setCartItemsCommand", setCartItemsCommand)
 
 	nextRunParams := &orchestrations.SetShoppingCartRequest{

@@ -15,6 +15,7 @@ import (
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/internal/shopping"
 	"go.temporal.io/sdk/converter"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/testsuite"
 	"go.temporal.io/sdk/workflow"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -133,7 +134,6 @@ func (s *CartTestSuite) Test_ClearingCartWithSetItemsContinuesAsNew() {
 
 func (s *CartTestSuite) Test_SetShoppingCartHydratesState() {
 	s.env.RegisterWorkflow(TypeOrchestrations.Cart)
-	s.env.SetTestTimeout(time.Second * 4)
 	params := &orchestrations2.SetShoppingCartRequest{
 		ShopperId:            cuid.New(),
 		Email:                cuid.New(),
@@ -172,11 +172,10 @@ func (s *CartTestSuite) Test_SetShoppingCartHydratesState() {
 	}, time.Second*3)
 
 	s.env.ExecuteWorkflow(TypeOrchestrations.Cart, params)
-	//werr := s.env.GetWorkflowError()
+	werr := s.env.GetWorkflowError()
 	s.True(s.env.IsWorkflowCompleted())
 	// this next assertion fails
-	//s.True(temporal.IsCanceledError(werr))
-	//s.NoError(werr)
+	s.True(temporal.IsCanceledError(werr))
 
 	s.NoError(queryErr)
 	s.NotNil(queryResult)
