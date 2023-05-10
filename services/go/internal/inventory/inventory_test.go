@@ -10,6 +10,11 @@ import (
 )
 
 func TestInventoryService_GetGames(t *testing.T) {
+
+	allGames, err := getAllGames(gamesV1JSON)
+	if err != nil {
+		t.Fatal(err)
+	}
 	type args struct {
 		ctx     context.Context
 		request *inventory.GetGamesRequest
@@ -24,7 +29,7 @@ func TestInventoryService_GetGames(t *testing.T) {
 
 			name:    "happy path",
 			args:    args{ctx: context.Background(), request: &inventory.GetGamesRequest{Version: "1"}},
-			want:    &inventory.GetGamesResponse{},
+			want:    &inventory.GetGamesResponse{Games: allGames},
 			wantErr: nil,
 		},
 	}

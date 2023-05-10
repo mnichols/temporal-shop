@@ -14,7 +14,6 @@ import (
 )
 
 // Cart is an entity workflow for a Shopping Cart
-// TODO guard against signal flood, doing continueAsNew after N signals
 func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.SetShoppingCartRequest) error {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 2,
@@ -90,7 +89,7 @@ func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.SetSh
 			Activity:  setCartItemsCommand.Caller.TargetActivity,
 		}
 	}
-	// Drain signal channel asynchronously to avoid signal loss
+	//Drain signal channel asynchronously to avoid signal loss
 	for {
 		var signalVal string
 		ok := setItemsChan.ReceiveAsync(&signalVal)

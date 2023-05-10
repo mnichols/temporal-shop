@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
 	orchestrations2 "github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1"
+	"github.com/temporalio/temporal-shop/services/go/internal/shopping"
 	"go.temporal.io/sdk/converter"
 	"go.temporal.io/sdk/testsuite"
 	"go.temporal.io/sdk/workflow"
@@ -178,7 +179,7 @@ func (s *ShopperTestSuite) Test_StartShopperSession_ContinuesAsNewAfterThreshold
 		TypeOrchestrations.Cart,
 		mock.Anything,
 		&orchestrations2.SetShoppingCartRequest{
-			CartId:    params.CartId,
+			CartId:    shopping.CartID(params.ShopperId),
 			ShopperId: params.ShopperId,
 			Email:     params.Email,
 		},
