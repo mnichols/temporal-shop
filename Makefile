@@ -17,9 +17,12 @@ out:
 	mkdir -p out
 
 bff: out
-	@cd web; go build -ldflags ${LINKER_FLAGS} -o ../out/bff ./bff/cmd/bff/main.go
+	@go work sync;cd web; go build -ldflags ${LINKER_FLAGS} -o ../out/bff ./bff/cmd/bff/main.go
 
-bins: bff
+domain: out
+	@cd services/go; go build -ldflags ${LINKER_FLAGS} -o ../out/domain ./cmd/temporal_shop/main.go
+
+bins: bff domain
 
 genapi:
 	@cd proto; buf generate

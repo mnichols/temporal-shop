@@ -16,7 +16,7 @@ require (
 	github.com/prometheus/client_golang v1.15.0
 	github.com/stretchr/testify v1.8.2
 	github.com/stripe/stripe-go/v72 v72.122.0
-	github.com/temporalio/temporal-shop/api v0.0.0-20230104202827-59b6048ab006
+	//github.com/temporalio/temporal-shop/api v0.0.0-20230104202827-59b6048ab006
 	github.com/uber-go/tally/v4 v4.1.7
 	github.com/vrischmann/envconfig v1.3.0
 	go.temporal.io/api v1.19.1-0.20230322213042-07fb271d475b

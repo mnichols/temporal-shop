@@ -13,8 +13,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/lucsky/cuid v1.2.1
 	github.com/stretchr/testify v1.8.2
-	github.com/temporalio/temporal-shop/api v0.0.0-20230104202827-59b6048ab006
-	github.com/temporalio/temporal-shop/services/go v0.0.0-20230104202827-59b6048ab006
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/yosida95/uritemplate v2.0.0+incompatible
 	go.temporal.io/api v1.19.1-0.20230322213042-07fb271d475b
