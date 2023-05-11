@@ -81,6 +81,11 @@ jobs:
       - name: asdf
         id: asdf
         uses: mnichols/asdf-composite-action@v1
+      - name: dependency requirements
+        run: |
+          echo "My token is $GH_TOKEN"
+          env
+          git config --global url."https://${{ secrets.GH_TOKEN }}@github".insteadOf https://github
       - name: dependencies
         run: cd web && go mod tidy && go mod verify
       - name: lint
