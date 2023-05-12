@@ -5,7 +5,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
+	"github.com/uber-go/tally/v4"
 	sdkclient "go.temporal.io/sdk/client"
+	sdktally "go.temporal.io/sdk/contrib/tally"
 	"logur.dev/logur"
 	"os"
 )
@@ -13,6 +15,10 @@ import (
 func GetIdentity(taskQueue string) string {
 	return fmt.Sprintf("%d@%s@%s", os.Getpid(), getHostName(), taskQueue)
 
+}
+
+func NewMetricsHandler(scope tally.Scope) sdkclient.MetricsHandler {
+	return sdktally.NewMetricsHandler(scope)
 }
 
 type Clients struct {
@@ -61,6 +67,7 @@ func NewClients(ctx context.Context, opts ...Option) (*Clients, error) {
 	if result.ClientOptions.Logger == nil && result.logger != nil {
 		result.ClientOptions.Logger = logur.LoggerToKV(result.logger)
 	}
+
 	// map
 	if result.ClientOptions.HostPort == "" {
 		result.ClientOptions.HostPort = result.Config.HostPort

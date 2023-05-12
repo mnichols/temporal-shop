@@ -13,3 +13,7 @@ message Game {
   string image_url = 4;
   int64 price_cents = 5;
 }
+message Topic {
+  string task_queue = 1;
+  string activity = 2;
+}

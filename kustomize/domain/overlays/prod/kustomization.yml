@@ -1,0 +1,19 @@
+---
+bases:
+  - ../../base
+namespace: temporal-shop
+#resources:
+#  - ingress-route.yml
+#  - service-ui.yml
+#  - certificate-staging.yml
+commonLabels:
+  env: prod
+configMapGenerator:
+  - name: app-cfg
+    envs:
+      - .env.prod
+images:
+  #429214323166.dkr.ecr.us-east-1.amazonaws.com/gtm:latest
+  - name: amazonaws.com/domain #maps to the deployment image name
+    newName: ${ECR_REPOSITORY}
+    newTag: ${IMAGE_TAG}

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package temporal_shop.orchestrations.v1;
 option go_package = "github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1;orchestrations";
+import "temporal_shop/values/v1/message.proto";
 
 message PingRequest {
   string name = 1;
@@ -24,8 +25,10 @@ message AllocateInventoryRequest {
   string email = 2;
 }
 
-message StartShoppingCartRequest {
+message SetShoppingCartRequest {
   string cart_id = 1;
   string shopper_id = 2;
   string email = 3;
+  map<string, int64> product_ids_to_quantity = 4;
+  values.v1.Topic topic = 5;
 }

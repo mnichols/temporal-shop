@@ -42,7 +42,5 @@ const addAuthToOperation = (operation: Operation) => {
 }
 const refreshAuth = async (): Promise<void> => {
     await doLogout()
-    console.log('goLogin')
-
     return await goLogin()
 }

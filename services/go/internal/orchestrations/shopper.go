@@ -169,7 +169,7 @@ func startShoppingCart(
 		ParentClosePolicy: enums.PARENT_CLOSE_POLICY_ABANDON,
 	}))
 
-	f := workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.Cart, &orchestrations2.StartShoppingCartRequest{
+	f := workflow.ExecuteChildWorkflow(cctx, TypeOrchestrations.Cart, &orchestrations2.SetShoppingCartRequest{
 		Email:     params.Email,
 		CartId:    params.CartId,
 		ShopperId: params.ShopperId,

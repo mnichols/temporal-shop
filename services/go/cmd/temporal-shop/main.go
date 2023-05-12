@@ -9,6 +9,8 @@ import (
 	"github.com/temporalio/temporal-shop/services/go/pkg/clients/http"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/inventory"
 	temporal2 "github.com/temporalio/temporal-shop/services/go/pkg/clients/temporal"
+	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/metrics"
+	sdkclient "go.temporal.io/sdk/client"
 	"os"
 	"os/signal"
 	"syscall"
@@ -34,6 +36,7 @@ type appConfig struct {
 	HTTPConfig     *http.Config
 	GRPCConfig     *grpc.Config
 	PubSub         *pubsub.Config
+	Metrics        *metrics.Config
 }
 
 func main() {
@@ -64,15 +67,17 @@ func main() {
 		panic(fmt.Sprintf("failed to create grpc client conn %s", err.Error()))
 	}
 
-	pubsubHTTPClient, err := http.NewClient(ctx, http.WithPlugin(http.NewBasicAuth(appCfg.PubSub.Username, appCfg.PubSub.Password)))
+	mts, err := metrics.NewPrometheusScope(ctx, appCfg.Metrics)
 	if err != nil {
-		panic(fmt.Sprintf("failed to create http client %s", err.Error()))
+		panic(fmt.Sprintf("failed to create prometheus scope %s", err.Error()))
 	}
 	// clients
 	clients := clients.MustGetClients(ctx,
-		clients.WithPubSub(pubsub.NewClient(ctx, pubsub.WithHttpClient(pubsubHTTPClient), pubsub.WithConfig(appCfg.PubSub))),
 		clients.WithTemporal(temporal2.NewClients(ctx,
 			temporal2.WithConfig(appCfg.TemporalClient),
+			temporal2.WithOptions(sdkclient.Options{
+				MetricsHandler: temporal2.NewMetricsHandler(mts),
+			}),
 			temporal2.WithLogger(logger))),
 		clients.WithInventory(inventory2.NewClient(ctx, clientConn)),
 	)

@@ -1,0 +1,35 @@
+# Stage 1: Build
+FROM golang:1.19.2-alpine3.16 AS builder
+
+# Install build tools
+RUN apk add --update --no-cache ca-certificates git make openssh
+
+# Making sure that dependency is not touched
+ENV GOFLAGS="-mod=readonly"
+
+WORKDIR /work
+
+# Copy go mod dependencies and build cache
+COPY services/go/go.mod ./
+COPY services/go/go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+# need to make clean first in case binaries to be built are stale
+RUN make clean && CGO_ENABLED=0 make bins
+
+# Stage 2: GTM Applications
+FROM alpine:3.16 AS gtmapps
+
+RUN apk --no-cache upgrade
+RUN apk add --update bash ca-certificates
+
+# Expose port 8080 to the outside world
+EXPOSE 9000
+EXPOSE 9090
+
+# this is the `/cmd/gtm/main.go` binary being run
+COPY --from=builder /work/out/domain /usr/local/bin/domain
+CMD ["/usr/local/bin/domain"]

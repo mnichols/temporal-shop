@@ -10,14 +10,13 @@
     import {InventoryDocument} from '$gql'
     import type {  InventoryInput} from '$gql'
 
-    /** @type {import('../../../../../.svelte-kit/types/src/routes').PageData} */
+    /** @type {import('./$types').PageData} */
     export let data;
     let input: InventoryInput = { category: data.category }
     page.subscribe(ignore => {
         input.category = $page.url.searchParams.get('category')
     })
 
-    $: console.log('page category be ' + input)
     $: inventory = queryStore({
         client: getContextClient(),
         query: InventoryDocument,

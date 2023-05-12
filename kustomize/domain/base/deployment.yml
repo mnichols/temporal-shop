@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment                 # Type of Kubernetes resource
+metadata:
+  name: domain           # Name of the Kubernetes resource
+spec:
+  replicas: 3                    # Number of pods to run at any given time
+  selector:
+    matchLabels:
+      app: domain        # This deployment applies to any Pods matching the specified label
+  template:                      # This deployment will create a set of pods using the configurations in this template
+    metadata:
+      labels:                    # The labels that will be applied to all of the pods in this deployment
+        app: domain
+    spec:                        # Spec for the container which will run in the Pod
+      serviceAccountName: temporal-shop
+      containers:
+        - name: domain
+          image: amazonaws.com/domain
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: app-cfg
+          env:
+            - name: TEMPORAL_CLOUD_CERT_PEM
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-cloud-cert
+                  key: pem
+            - name: TEMPORAL_CLOUD_CERT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: temporal-cloud-cert
+                  key: key
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe
+                  key: secret-key
+          ports:
+            - name: grpc
+              containerPort: 9000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: "128M"
+            limits:
+              cpu: 100m
+              memory: "256M"
+          livenessProbe:           # To check the health of the Pod
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:          # To check if the Pod is ready to serve traffic or not
+            httpGet:
+              path: /readiness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 1

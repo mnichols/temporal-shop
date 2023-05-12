@@ -1,0 +1,10 @@
+---
+commonLabels:
+  app: temporal-shop
+namespace: temporal-shop
+resources:
+  - deployment.yml
+  - service-inventory.yml
+  - service-orchestrations.yml
+  - service-account.yml
+  - namespace.yml

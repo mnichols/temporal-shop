@@ -38,6 +38,9 @@ spec:
                   name: stripe
                   key: secret-key
           ports:
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
             - containerPort: 8080  # Should match the port number that the Go application listens on
           resources:
             requests:

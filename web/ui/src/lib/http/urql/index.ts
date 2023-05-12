@@ -34,9 +34,7 @@ export const createTestClient = (): Client => {
     return createURQLClient({
         url: PUBLIC_GRAPHQL_URL,
         exchanges: [
-            debugExchange,
-            // createCacheExchange(),
-            // createSubscriptionExchange(PUBLIC_SUBSCRIPTIONS_URL),
+            // debugExchange,
             fetchExchange,
         ],
         fetchOptions: () => {

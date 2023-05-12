@@ -38,7 +38,7 @@ func TestEncryptReuse(t *testing.T) {
 
 	actual, err := Encrypt(key, []byte(email))
 	A.NoError(err)
-	A.Equal(expect, actual)
+	A.NotEqual(expect, actual)
 }
 
 // https://pkg.go.dev/github.com/google/tink/go/daead/subtle

@@ -9,6 +9,14 @@ import (
 	"google.golang.org/grpc"
 )
 
+func getAllGames(rawJSON string) ([]*values.Game, error) {
+	var games []*values.Game
+
+	data := []byte(rawJSON)
+	err := json.Unmarshal(data, &games)
+	return games, err
+}
+
 func InventorySessionID(sessionID string) string {
 	return fmt.Sprintf("inv_%s", sessionID)
 }

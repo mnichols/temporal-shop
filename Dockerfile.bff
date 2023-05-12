@@ -28,6 +28,7 @@ RUN apk add --update bash ca-certificates
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
+EXPOSE 9090
 
 # this is the `/cmd/gtm/main.go` binary being run
 COPY --from=builder /work/out/bff /usr/local/bin/bff
