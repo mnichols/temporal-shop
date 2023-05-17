@@ -1,9 +1,0 @@
-syntax = "proto3";
-import "inventory/v1/message.proto";
-
-package inventory.v1;
-option go_package = "github.com/temporalio/temporal-shop/api/inventory/v1;inventory";
-
-service InventoryService {
-  rpc GetGames(GetGamesRequest) returns (GetGamesResponse);
-}

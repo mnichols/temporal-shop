@@ -2,10 +2,6 @@ package orchestrations
 
 import (
 	"fmt"
-	"github.com/temporalio/temporal-shop/api/inventory/v1"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/values/v1"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"go.temporal.io/sdk/workflow"
 	"time"

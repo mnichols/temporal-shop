@@ -1,7 +1,0 @@
-query CurrentUser($input: UserInput) {
-    user(input: $input) {
-        email,
-        token,
-        ok,
-    }
-}

@@ -3,9 +3,6 @@ package shopping
 import (
 	"context"
 	"fmt"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/values/v1"
 	"google.golang.org/protobuf/proto"
 )
 

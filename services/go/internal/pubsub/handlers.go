@@ -2,7 +2,7 @@ package pubsub
 
 import (
 	"context"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
+	queries "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/queries/v1"
 	pubsub "github.com/temporalio/temporal-shop/services/go/internal/pubsub/client"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"go.temporal.io/sdk/activity"

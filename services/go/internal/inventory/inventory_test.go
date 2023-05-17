@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
-	"github.com/temporalio/temporal-shop/api/inventory/v1"
 	"google.golang.org/protobuf/testing/protocmp"
 	"testing"
 )

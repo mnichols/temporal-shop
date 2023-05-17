@@ -1,6 +1,0 @@
-query PingTest($input: PingInput) {
-    ping(input: $input) {
-        value,
-        timestamp,
-    }
-}

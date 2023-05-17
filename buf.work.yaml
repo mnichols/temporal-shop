@@ -1,0 +1,3 @@
+version: v1
+directories:
+  - temporal-shop-api/proto

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/test/v1"
 	"testing"
 )
 

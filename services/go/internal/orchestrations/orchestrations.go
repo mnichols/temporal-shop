@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1"
 	"github.com/temporalio/temporal-shop/services/go/internal/admin"
 	"go.temporal.io/sdk/workflow"
 )

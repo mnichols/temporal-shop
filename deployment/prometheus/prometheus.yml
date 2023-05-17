@@ -9,7 +9,6 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets:
-          - host.docker.internal:9098
-          - host.docker.internal:9099
+          - host.docker.internal:9091
         labels:
           group: 'sdk-metrics'

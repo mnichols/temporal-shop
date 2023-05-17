@@ -3,9 +3,9 @@ package orchestrations
 import (
 	"errors"
 	"fmt"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
-	orchestrations2 "github.com/temporalio/temporal-shop/api/temporal_shop/orchestrations/v1"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/queries/v1"
+	commands "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/commands/v1"
+	orchestrations2 "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/orchestrations/v1"
+	queries "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/queries/v1"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/internal/shopping"
 	"go.temporal.io/api/enums/v1"

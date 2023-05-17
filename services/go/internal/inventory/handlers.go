@@ -2,7 +2,6 @@ package inventory
 
 import (
 	"context"
-	"github.com/temporalio/temporal-shop/api/inventory/v1"
 )
 
 var TypeHandlers *Handlers

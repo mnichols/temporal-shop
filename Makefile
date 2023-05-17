@@ -10,27 +10,19 @@ COMMIT := $(shell git rev-parse --short HEAD )
 SHORT_SHA := $(echo $COMMIT | cut -c 1-8)
 DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
 VERSION := $(TAG:v%=%)
-BFF_BUILD_PKG := github.com/$(GITHUB_REPOSITORY)/web/bff/build
-LINKER_FLAGS := "-X '${BFF_BUILD_PKG}.Commit=${COMMIT}' -X '${BFF_BUILD_PKG}.Version=${VERSION}' -X '${BFF_BUILD_PKG}.BuildDate=${DATE}'"
+DOMAIN_BUILD_PKG := github.com/$(GITHUB_REPOSITORY)/services/go/build
+LINKER_FLAGS := "-X '${DOMAIN_BUILD_PKG}.Commit=${COMMIT}' -X '${DOMAIN_BUILD_PKG}.Version=${VERSION}' -X '${DOMAIN_BUILD_PKG}.BuildDate=${DATE}'"
 
 out:
 	mkdir -p out
 
-bff: out
-	@go work sync;cd web; go build -ldflags ${LINKER_FLAGS} -o ../out/bff ./bff/cmd/bff/main.go
-
 domain: out
-	@cd services/go; go build -ldflags ${LINKER_FLAGS} -o ../out/domain ./cmd/temporal_shop/main.go
+	@cd services/go; go build -ldflags ${LINKER_FLAGS} -o ./out/domain ./cmd/temporal_shop/main.go
 
-bins: bff domain
+bins: genapi domain
 
 genapi:
-	@cd proto; buf generate
-
-gengql:
-	@cd web/ui; npm run codegen
-	@cd web/bff/internal/gql; go run github.com/99designs/gqlgen --config gqlgen.yml generate
-	#@cd services/go/internal/pubsub; go run github.com/Khan/genqlient ./genqlient.yaml
+	@buf generate
 
 test:
 	go test -race -timeout=5m -cover -count=1  ./...
@@ -38,9 +30,5 @@ test:
 clean:
 	@rm -rf out
 
-lint:
-	golangci-lint run ./web
-
-login:
-	JWT = $(http --verify=no https://localhost:8080/api/login email=mike.nichols@temporal.io | jq -r .token)
-	echo ${JWT}
+lint: genapi
+	golangci-lint run ./services/go

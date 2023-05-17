@@ -2,7 +2,6 @@ package admin
 
 import (
 	"context"
-	"github.com/temporalio/temporal-shop/api/temporal_shop/commands/v1"
 )
 
 type Handlers struct{}

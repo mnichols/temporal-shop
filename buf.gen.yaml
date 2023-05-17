@@ -1,0 +1,17 @@
+version: v1
+managed:
+  enabled: true
+  optimize_for: CODE_SIZE
+  go_package_prefix:
+    default: github.com/temporalio/temporal-shop/services/go/api/generated
+    except:
+      - buf.build/googleapis/googleapis
+plugins:
+  - plugin: buf.build/protocolbuffers/go
+    out: services/go/api/generated
+    opt: paths=source_relative
+  - plugin: buf.build/grpc/go:v1.3.0
+    out: services/go/api/generated
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
