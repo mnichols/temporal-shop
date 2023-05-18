@@ -5,6 +5,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/api/generated/inventory/v1"
+	orchestrations2 "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/orchestrations/v1"
+	queries "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/queries/v1"
+	values "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/values/v1"
 	"github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"go.temporal.io/sdk/testsuite"
 	"testing"
@@ -47,7 +50,7 @@ func (s *InventoryTestSuite) Test_LoadsGamesAndExposesThem() {
 		{Id: cuid.New()},
 	}
 
-	params := &orchestrations.AllocateInventoryRequest{
+	params := &orchestrations2.AllocateInventoryRequest{
 		InventoryId: cuid.New(),
 		Email:       cuid.New(),
 	}

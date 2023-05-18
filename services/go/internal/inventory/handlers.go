@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"context"
+	inventory "github.com/temporalio/temporal-shop/services/go/api/generated/inventory/v1"
 )
 
 var TypeHandlers *Handlers

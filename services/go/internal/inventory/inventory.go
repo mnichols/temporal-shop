@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	inventory "github.com/temporalio/temporal-shop/services/go/api/generated/inventory/v1"
+	values "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/values/v1"
 	"google.golang.org/grpc"
 )
 

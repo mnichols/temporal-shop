@@ -2,6 +2,12 @@ package orchestrations
 
 import (
 	"fmt"
+	inventory "github.com/temporalio/temporal-shop/services/go/api/generated/inventory/v1"
+	commands "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/commands/v1"
+	orchestrations2 "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/orchestrations/v1"
+	queries "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/queries/v1"
+	values "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/values/v1"
+
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/internal/shopping"
 	"go.temporal.io/sdk/workflow"
@@ -9,7 +15,7 @@ import (
 )
 
 // Cart is an entity workflow for a Shopping Cart
-func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.SetShoppingCartRequest) error {
+func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations2.SetShoppingCartRequest) error {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 2,
 	}
@@ -85,7 +91,7 @@ func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.SetSh
 	}
 	logger.Info("set items on cart", "setCartItemsCommand", setCartItemsCommand)
 
-	nextRunParams := &orchestrations.SetShoppingCartRequest{
+	nextRunParams := &orchestrations2.SetShoppingCartRequest{
 		CartId:               params.CartId,
 		ShopperId:            params.ShopperId,
 		Email:                params.Email,
@@ -105,7 +111,7 @@ func (w *Orchestrations) Cart(ctx workflow.Context, params *orchestrations.SetSh
 			break
 		}
 		logger.Info("async receipt of signal")
-		nextRunParams = &orchestrations.SetShoppingCartRequest{
+		nextRunParams = &orchestrations2.SetShoppingCartRequest{
 			CartId:               params.CartId,
 			ShopperId:            params.ShopperId,
 			Email:                params.Email,

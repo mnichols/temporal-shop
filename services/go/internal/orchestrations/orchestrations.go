@@ -2,6 +2,8 @@ package orchestrations
 
 import (
 	"fmt"
+	commands "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/commands/v1"
+	orchestrations2 "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/orchestrations/v1"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 	"runtime"
@@ -57,20 +59,20 @@ func getFunctionName(i interface{}) (name string, isMethod bool) {
 type Orchestrations struct {
 }
 
-func (w *Orchestrations) Ping(ctx workflow.Context, params *orchestrations.PingRequest) (*orchestrations.PingResponse, error) {
+func (w *Orchestrations) Ping(ctx workflow.Context, params *orchestrations2.PingRequest) (*orchestrations2.PingResponse, error) {
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	var pong *orchestrations.PingResponse
+	var pong *orchestrations2.PingResponse
 	if err := workflow.ExecuteActivity(ctx, adminHandlers.PingPong, commands.PingRequest{Name: params.Name}).
 		Get(ctx, &pong); err != nil {
 		return nil, fmt.Errorf("ping pong failed! %w", err)
 	}
 
-	return &orchestrations.PingResponse{
+	return &orchestrations2.PingResponse{
 		Name: fmt.Sprintf("Pong = %s", pong.Name),
 	}, nil
 }

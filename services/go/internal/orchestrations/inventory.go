@@ -2,12 +2,16 @@ package orchestrations
 
 import (
 	"fmt"
+	inventory "github.com/temporalio/temporal-shop/services/go/api/generated/inventory/v1"
+	orchestrations2 "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/orchestrations/v1"
+	queries "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/queries/v1"
+	values "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/values/v1"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"go.temporal.io/sdk/workflow"
 	"time"
 )
 
-func (w *Orchestrations) Inventory(ctx workflow.Context, params *orchestrations.AllocateInventoryRequest) error {
+func (w *Orchestrations) Inventory(ctx workflow.Context, params *orchestrations2.AllocateInventoryRequest) error {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 2,
 	}

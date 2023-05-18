@@ -3,6 +3,7 @@ package temporal_shop
 import (
 	"context"
 	"fmt"
+	inventory "github.com/temporalio/temporal-shop/services/go/api/generated/inventory/v1"
 	"github.com/temporalio/temporal-shop/services/go/internal/admin"
 	inventory2 "github.com/temporalio/temporal-shop/services/go/internal/inventory"
 	"github.com/temporalio/temporal-shop/services/go/internal/orchestrations"

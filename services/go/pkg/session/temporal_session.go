@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	commands "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/commands/v1"
 	orchestrations2 "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/orchestrations/v1"
 	"github.com/temporalio/temporal-shop/services/go/pkg/instrumentation/log"
 	"github.com/temporalio/temporal-shop/services/go/pkg/orchestrations"

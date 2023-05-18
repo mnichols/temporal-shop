@@ -4,6 +4,7 @@ import (
 	"github.com/lucsky/cuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	commands "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/commands/v1"
 	orchestrations2 "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/orchestrations/v1"
 	"github.com/temporalio/temporal-shop/services/go/internal/shopping"
 	"go.temporal.io/sdk/converter"

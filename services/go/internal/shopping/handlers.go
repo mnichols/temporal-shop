@@ -3,6 +3,9 @@ package shopping
 import (
 	"context"
 	"fmt"
+	commands "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/commands/v1"
+	queries "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/queries/v1"
+	values "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/values/v1"
 )
 
 var TypeHandlers *Handlers

@@ -2,6 +2,7 @@ package orchestrations
 
 import (
 	"github.com/stretchr/testify/assert"
+	test "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/test/v1"
 	"testing"
 )
 

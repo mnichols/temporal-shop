@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	values "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/values/v1"
 	"github.com/temporalio/temporal-shop/services/go/internal/encrypt"
 	"go.temporal.io/sdk/client"
 	"google.golang.org/protobuf/proto"

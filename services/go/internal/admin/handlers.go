@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	commands "github.com/temporalio/temporal-shop/services/go/api/generated/temporal_shop/commands/v1"
 )
 
 type Handlers struct{}
