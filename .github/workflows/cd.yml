@@ -58,9 +58,9 @@ jobs:
         run: |
           git config --global url."https://${{ secrets.PAT }}@github".insteadOf https://github
       - name: dependencies
-        run: cd web && go mod tidy && go mod verify
+        run: cd services/go && go mod tidy && go mod verify
       - name: lint
-        run: cd web && golangci-lint run
+        run: cd services/go && golangci-lint run
       - name: test
         run: cd services/go && go test -race -timeout=5m -cover -count=1  ./...
   deploy:

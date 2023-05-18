@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -18,7 +17,6 @@ func (c *TestConfigWithOverride) Prefix() string {
 	return "customtype"
 }
 func (c *TestConfigWithOverride) Override() error {
-	fmt.Sprintf("calling override")
 	if c.CustomThing == "" {
 		c.CustomThing = "overriddenvalue"
 	}

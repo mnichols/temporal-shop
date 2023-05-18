@@ -22,7 +22,7 @@ type mockTemporal struct {
 	mock.Mock
 }
 
-func (m mockTemporal) DescribeWorkflowExecution(ctx context.Context, s string, s2 string) (*workflowservice.DescribeWorkflowExecutionResponse, error) {
+func (m *mockTemporal) DescribeWorkflowExecution(ctx context.Context, s string, s2 string) (*workflowservice.DescribeWorkflowExecutionResponse, error) {
 	args := m.Called(ctx, s, s2)
 	out := args.Get(0)
 	if out != nil {
@@ -30,14 +30,14 @@ func (m mockTemporal) DescribeWorkflowExecution(ctx context.Context, s string, s
 	}
 	return nil, args.Error(1)
 }
-func (m mockTemporal) SignalWorkflow(ctx context.Context, wid, rid, signalName string, arg interface{}) error {
+func (m *mockTemporal) SignalWorkflow(ctx context.Context, wid, rid, signalName string, arg interface{}) error {
 	args := m.Called(ctx, wid, rid, signalName, arg)
 	if args.Get(0) != nil {
 		return args.Error(0)
 	}
 	return nil
 }
-func (m mockTemporal) ExecuteWorkflow(ctx context.Context, options client.StartWorkflowOptions, workflow interface{}, p ...interface{}) (client.WorkflowRun, error) {
+func (m *mockTemporal) ExecuteWorkflow(ctx context.Context, options client.StartWorkflowOptions, workflow interface{}, p ...interface{}) (client.WorkflowRun, error) {
 	args := m.Called(ctx, options, workflow, p)
 	if args.Get(1) != nil {
 		return nil, args.Error(1)
