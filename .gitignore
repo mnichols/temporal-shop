@@ -40,6 +40,6 @@ yarn-error.log*
 /build
 .svelte-kit
 
-generated
+#generated
 
 .idea
