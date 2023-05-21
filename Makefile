@@ -17,7 +17,7 @@ out:
 	mkdir -p out
 
 domain: out
-	@cd services/go; go build -ldflags ${LINKER_FLAGS} -o ./out/domain ./cmd/temporal_shop/main.go
+	@cd services/go; go build -ldflags ${LINKER_FLAGS} -o ./out/domain ./cmd/temporal-shop/main.go
 
 bins: domain
 
