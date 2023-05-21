@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
@@ -19,5 +18,5 @@ func MustReadCloser(obj interface{}) io.ReadCloser {
 	if err != nil {
 		panic(err)
 	}
-	return ioutil.NopCloser(bytes.NewReader(data))
+	return io.NopCloser(bytes.NewReader(data))
 }

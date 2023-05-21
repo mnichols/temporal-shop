@@ -1,49 +1,49 @@
 package session
 
-import (
-	"context"
-	"github.com/stretchr/testify/mock"
-
-	"go.temporal.io/api/workflowservice/v1"
-	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/mocks"
-)
-
-type temporalSessionTestCase struct {
-	desc         string
-	path         string
-	email        string
-	sessionToken *string
-	expectErr    error
-	temporalErr  error
-	header       bool
-}
-type mockTemporal struct {
-	mock.Mock
-}
-
-func (m *mockTemporal) DescribeWorkflowExecution(ctx context.Context, s string, s2 string) (*workflowservice.DescribeWorkflowExecutionResponse, error) {
-	args := m.Called(ctx, s, s2)
-	out := args.Get(0)
-	if out != nil {
-		return out.(*workflowservice.DescribeWorkflowExecutionResponse), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
-func (m *mockTemporal) SignalWorkflow(ctx context.Context, wid, rid, signalName string, arg interface{}) error {
-	args := m.Called(ctx, wid, rid, signalName, arg)
-	if args.Get(0) != nil {
-		return args.Error(0)
-	}
-	return nil
-}
-func (m *mockTemporal) ExecuteWorkflow(ctx context.Context, options client.StartWorkflowOptions, workflow interface{}, p ...interface{}) (client.WorkflowRun, error) {
-	args := m.Called(ctx, options, workflow, p)
-	if args.Get(1) != nil {
-		return nil, args.Error(1)
-	}
-	return &mocks.WorkflowRun{}, nil
-}
+//import (
+//	"context"
+//	"github.com/stretchr/testify/mock"
+//
+//	"go.temporal.io/api/workflowservice/v1"
+//	"go.temporal.io/sdk/client"
+//	"go.temporal.io/sdk/mocks"
+//)
+//
+//type temporalSessionTestCase struct {
+//	desc         string
+//	path         string
+//	email        string
+//	sessionToken *string
+//	expectErr    error
+//	temporalErr  error
+//	header       bool
+//}
+//type mockTemporal struct {
+//	mock.Mock
+//}
+//
+//func (m *mockTemporal) DescribeWorkflowExecution(ctx context.Context, s string, s2 string) (*workflowservice.DescribeWorkflowExecutionResponse, error) {
+//	args := m.Called(ctx, s, s2)
+//	out := args.Get(0)
+//	if out != nil {
+//		return out.(*workflowservice.DescribeWorkflowExecutionResponse), args.Error(1)
+//	}
+//	return nil, args.Error(1)
+//}
+//func (m *mockTemporal) SignalWorkflow(ctx context.Context, wid, rid, signalName string, arg interface{}) error {
+//	args := m.Called(ctx, wid, rid, signalName, arg)
+//	if args.Get(0) != nil {
+//		return args.Error(0)
+//	}
+//	return nil
+//}
+//func (m *mockTemporal) ExecuteWorkflow(ctx context.Context, options client.StartWorkflowOptions, workflow interface{}, p ...interface{}) (client.WorkflowRun, error) {
+//	args := m.Called(ctx, options, workflow, p)
+//	if args.Get(1) != nil {
+//		return nil, args.Error(1)
+//	}
+//	return &mocks.WorkflowRun{}, nil
+//}
 
 //func Test_Temporal_AuthenticateRequest(t *testing.T) {
 //	const encKey = "feefifum"

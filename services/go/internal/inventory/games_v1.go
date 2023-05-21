@@ -172,7 +172,7 @@ const gamesV1JSON = `
   },
   {
     "id": "25",
-    "title": "Rainbow Six Seige",
+    "title": "Rainbow Six Siege",
     "category": "pc",
     "image_url": "https://imgur.com/JIgzykM.png",
     "price_cents": 799

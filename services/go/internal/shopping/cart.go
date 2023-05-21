@@ -10,10 +10,9 @@ import (
 )
 
 type ShoppingCart struct {
-	commands     []proto.Message
-	taxRateBPS   int64
-	gamesFetcher FetchGames
-	args         ShoppingCartArgs
+	commands   []proto.Message
+	taxRateBPS int64
+	args       ShoppingCartArgs
 }
 
 type ShoppingCartArgs struct {

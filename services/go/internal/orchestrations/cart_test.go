@@ -61,15 +61,12 @@ func (s *CartTestSuite) Test_SetItemsContinuesAsNew() {
 		CartId:    cuid.New(),
 	}
 
-	var gamePriceCents int64 = 50
 	productIds := []string{"product_1", "product_2"}
-	var games []*values.Game
 	setItemsCommand := &commands.SetCartItemsRequest{
 		CartId:               params.CartId,
 		ProductIdsToQuantity: map[string]int64{},
 	}
 	for i, id := range productIds {
-		games = append(games, &values.Game{Id: id, PriceCents: gamePriceCents})
 		setItemsCommand.ProductIdsToQuantity[id] = int64(i + 1)
 	}
 

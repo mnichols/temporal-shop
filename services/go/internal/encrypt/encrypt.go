@@ -28,6 +28,8 @@ func stringHasher(algorithm hash.Hash, text string) string {
 func MDHash(input string) string {
 	byteInput := []byte(input)
 
+	/* we arent concerned about collision resistance in this */
+	/* #nosec */
 	md5Hash := md5.Sum(byteInput)
 	return hex.EncodeToString(md5Hash[:]) // by referring to it as a string
 }

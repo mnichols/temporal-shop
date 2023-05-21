@@ -2,6 +2,7 @@ package log
 
 import (
 	"context"
+	"fmt"
 	"go.uber.org/zap/zapcore"
 	"os"
 	"strings"
@@ -32,7 +33,11 @@ func NewLogger(ctx context.Context, cfg *Config, opts ...zap.Option) (logur.Logg
 		if err != nil {
 			return nil, err
 		}
-		defer l.Sync()
+		defer func() {
+			if syncErr := l.Sync(); syncErr != nil {
+				fmt.Print(syncErr)
+			}
+		}()
 		return zapadapter.New(l), nil
 	}
 	var core zapcore.Core
@@ -59,7 +64,11 @@ func NewLogger(ctx context.Context, cfg *Config, opts ...zap.Option) (logur.Logg
 	)
 	logger := zap.New(core)
 	logger.WithOptions(opts...)
-	defer logger.Sync()
+	defer func() {
+		if syncErr := logger.Sync(); syncErr != nil {
+			fmt.Print(syncErr)
+		}
+	}()
 	return zapadapter.New(logger), nil
 }
 

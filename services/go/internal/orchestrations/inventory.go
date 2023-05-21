@@ -31,8 +31,11 @@ func (w *Orchestrations) Inventory(ctx workflow.Context, params *orchestrations2
 		state.Games = append(state.Games, g)
 	}
 	// stayin alive
-	workflow.Await(ctx, func() bool {
+	if err := workflow.Await(ctx, func() bool {
 		return ctx.Err() != nil
-	})
+	}); err != nil {
+		fmt.Printf("inventory was canceled %v", err)
+		return err
+	}
 	return nil
 }
