@@ -95,7 +95,7 @@ jobs:
           dockerfile: Dockerfile.domain
       - name: split tags
         uses: jungwinter/split@v2
-        id: split-bff
+        id: split-domain
         with:
           separator: ','
           msg: ${{ steps.build-image.outputs.tags }}
