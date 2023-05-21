@@ -19,7 +19,7 @@ out:
 domain: out
 	@cd services/go; go build -ldflags ${LINKER_FLAGS} -o ./out/domain ./cmd/temporal_shop/main.go
 
-bins: genapi domain
+bins: domain
 
 genapi:
 	@buf generate
@@ -30,5 +30,5 @@ test:
 clean:
 	@rm -rf out
 
-lint: genapi
+lint:
 	golangci-lint run ./services/go
