@@ -31,5 +31,5 @@ EXPOSE 9000
 EXPOSE 9090
 
 # this is the `/cmd/gtm/main.go` binary being run
-COPY --from=builder /work/out/domain /usr/local/bin/domain
+COPY --from=builder /work/services/go/out/domain /usr/local/bin/domain
 CMD ["/usr/local/bin/domain"]
