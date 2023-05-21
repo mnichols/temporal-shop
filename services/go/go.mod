@@ -1,4 +1,4 @@
-module github.com/temporalio/temporal-shop
+module github.com/temporalio/temporal-shop/services/go
 
 go 1.20
 
