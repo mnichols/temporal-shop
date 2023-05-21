@@ -98,7 +98,7 @@ jobs:
         id: split-domain
         with:
           separator: ','
-          msg: ${{ steps.build-image.outputs.tags }}
+          msg: ${{ steps.build-image-domain.outputs.tags }}
       - name: update kubeconfig
         run: |
           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --role-arn ${{ env.GH_ACTIONS_ROLE }} --region ${{ env.AWS_REGION }}
