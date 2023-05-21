@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package temporal_shop.values.v1;
+option go_package = "github.com/temporalio/temporal-shop/api/temporal_shop/values/v1;values";
+
+message SessionID {
+  string email = 1;
+}
+message Game {
+  string id = 1;
+  string title = 2;
+  string category = 3;
+  string image_url = 4;
+  int64 price_cents = 5;
+}
+message Topic {
+  string task_queue = 1;
+  string activity = 2;
+}
