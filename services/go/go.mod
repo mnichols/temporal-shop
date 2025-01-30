@@ -1,6 +1,6 @@
 module github.com/temporalio/temporal-shop/services/go
 
-go 1.20
+go 1.21
 
 require (
 	github.com/Khan/genqlient v0.5.0

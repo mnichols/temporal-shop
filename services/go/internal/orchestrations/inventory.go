@@ -23,6 +23,12 @@ func (w *Orchestrations) Inventory(ctx workflow.Context, params *orchestrations2
 	}); err != nil {
 		return fmt.Errorf("failed to setup inventory query %w", err)
 	}
+	workflow.Go(ctx, func(ctx) {
+		if err := workflow.ExecuteActivity(ctx, inventory2.TypeHandlers.GetGames, &inventory.GetGamesRequest{Version: "1"}).Get(ctx, &games); err != nil {
+			return fmt.Errorf("failed to get games %w", err)
+		}
+	})
+
 	var games *inventory.GetGamesResponse
 	if err := workflow.ExecuteActivity(ctx, inventory2.TypeHandlers.GetGames, &inventory.GetGamesRequest{Version: "1"}).Get(ctx, &games); err != nil {
 		return fmt.Errorf("failed to get games %w", err)
